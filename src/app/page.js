@@ -650,8 +650,7 @@ export default function Page() {
                 Useful tools families can actually come back to.
               </h2>
               <p className="mt-5 text-lg leading-8 text-[#5F6977]">
-                A premium resource layer makes the site feel more valuable than a
-                brochure and more helpful before the first conversation.
+                Simple tools you can use right away.
               </p>
             </div>
 
