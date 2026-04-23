@@ -5,10 +5,9 @@ import { useState } from "react";
 export default function Page() {
   const [period, setPeriod] = useState("monthly");
 
-  // No real data yet → dashes
   const format = () => "—";
 
-  const resources = []; // empty for now
+  const resources = [];
 
   return (
     <div className="min-h-screen bg-[#F7F5F2] text-[#1F2933]">
@@ -16,10 +15,10 @@ export default function Page() {
       {/* HERO */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <h1 className="text-4xl md:text-6xl font-semibold leading-tight mb-6">
-          Feel back in control with a clear plan built around your real life.
+          Feel back in control with a clear plan built around your family’s real life.
         </h1>
         <p className="text-lg text-[#52606D] max-w-xl">
-          We help families bring clarity and structure to their finances through calm, practical guidance.
+          We help families bring clarity, structure, and calm back into their finances through thoughtful, practical guidance.
         </p>
       </section>
 
@@ -94,14 +93,14 @@ export default function Page() {
         </div>
 
         <p className="text-sm text-[#7B8794] mt-4">
-          Not to compare — just to help you better understand where things stand and feel more in control.
+          Not to compare — just to help you better understand where things stand and begin to feel more in control.
         </p>
       </section>
 
-      {/* OUTCOMES (NO FAKE TESTIMONIALS) */}
+      {/* OUTCOMES */}
       <section className="max-w-6xl mx-auto px-6 pb-20 text-center">
         <h2 className="text-3xl md:text-5xl font-semibold mb-4">
-          What changes when things start to feel more in control
+          What begins to change when things feel more in control
         </h2>
         <p className="text-[#52606D] mb-12">
           Here are some of the shifts families often experience.
@@ -110,7 +109,7 @@ export default function Page() {
         <div className="grid md:grid-cols-3 gap-6 text-left">
           <div className="bg-white rounded-2xl p-6 border">
             <p className="mb-6">
-              For many families, this is the first time everything is clearly laid out — and things start to feel back in control.
+              For many families, this is the first time everything is clearly laid out — and things begin to feel more manageable.
             </p>
             <div className="font-semibold">Young family with rising expenses</div>
             <div className="text-sm text-[#7B8794]">More breathing room</div>
@@ -118,7 +117,7 @@ export default function Page() {
 
           <div className="bg-white rounded-2xl p-6 border">
             <p className="mb-6">
-              Instead of reacting month to month, there’s a clearer plan and a stronger sense of control.
+              Instead of reacting month to month, there’s a clearer plan and a steadier sense of direction.
             </p>
             <div className="font-semibold">Household trying to steady cash flow</div>
             <div className="text-sm text-[#7B8794]">More clarity</div>
@@ -126,7 +125,7 @@ export default function Page() {
 
           <div className="bg-white rounded-2xl p-6 border">
             <p className="mb-6">
-              The numbers become easier to talk about, and the tension around money begins to ease.
+              The numbers become easier to talk about, and the tension around money begins to ease at home.
             </p>
             <div className="font-semibold">Couple carrying financial stress</div>
             <div className="text-sm text-[#7B8794]">Less tension</div>
@@ -140,7 +139,7 @@ export default function Page() {
           Simple tools you can use right away
         </h2>
         <p className="text-[#52606D] mb-10">
-          Practical tools to help you get clarity before we even speak.
+          Practical tools to help you start getting clarity before we even speak.
         </p>
 
         {resources.length === 0 ? (
@@ -164,7 +163,7 @@ export default function Page() {
       {/* CTA */}
       <section className="max-w-6xl mx-auto px-6 pb-20 text-center">
         <h2 className="text-3xl md:text-5xl font-semibold mb-4">
-          Ready to feel back in control?
+          Ready to bring more clarity and calm into your home?
         </h2>
         <p className="text-[#52606D] mb-6">
           Let’s build a clear plan around your real life.
