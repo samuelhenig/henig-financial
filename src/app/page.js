@@ -30,7 +30,7 @@ export default function Page() {
           </div>
 
           <h1 className="max-w-4xl text-5xl font-semibold leading-[1.04] tracking-tight md:text-7xl">
-            Feel back in control with a clear plan built around your family.
+            Take back control with a clear plan built around your family.
           </h1>
 
           <p className="mt-7 max-w-2xl text-lg leading-8 text-[#5F6977] md:text-xl">
