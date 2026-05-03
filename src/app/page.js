@@ -8,7 +8,7 @@ export default function Page() {
               Henig Financial
             </div>
             <div className="text-xs uppercase tracking-[0.26em] text-[#A86846]">
-              Family Financial Coaching
+              Family Financial Coaching.
             </div>
           </div>
 
