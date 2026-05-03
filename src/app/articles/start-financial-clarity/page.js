@@ -16,7 +16,7 @@ export default function ArticlePage() {
             <a href="/" className="text-[#A86846] hover:underline">
               ← Home
             </a>
-            <a href="/#articles" className="text-[#A86846] hover:underline">
+            <a href="/articles" className="text-[#A86846] hover:underline">
               Articles
             </a>
           </div>
