@@ -92,6 +92,8 @@ export default function Page() {
                 <div className="flex flex-wrap items-center gap-3 text-sm text-[#A86846]">
                   <span>{article.readTime}</span>
                   <span>•</span>
+                  <span>{article.date}</span>
+                  <span>•</span>
                   <span>{article.author}</span>
                 </div>
 
