@@ -1,24 +1,13 @@
 import Header from "../components/Header";
+import { articles } from "../data/articles";
 
 export default function ArticlesPage() {
-  const articles = [
-    {
-      title: "How to Start Getting Financial Clarity Without Feeling Overwhelmed",
-      description:
-        "A simple first step for families who want more control but don’t know where to begin.",
-      readTime: "3 min read",
-      author: "Shmily Henig, Founder",
-      href: "/articles/start-financial-clarity",
-    },
-  ];
-
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <Header />
 
       <section className="px-6 py-16 md:px-10 lg:px-14">
         <div className="mx-auto max-w-5xl">
-
           <div className="mb-10">
             <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
               Articles
@@ -28,8 +17,9 @@ export default function ArticlesPage() {
               Practical financial guidance for real family life
             </h1>
 
-            <p className="mt-5 text-lg leading-8 text-[#5F6977] max-w-2xl">
-              Clear, simple, and practical insights to help you take control of your money without feeling overwhelmed.
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
+              Clear, simple, and practical insights to help you take control of
+              your money without feeling overwhelmed.
             </p>
           </div>
 
@@ -62,7 +52,6 @@ export default function ArticlesPage() {
               </article>
             ))}
           </div>
-
         </div>
       </section>
     </main>
