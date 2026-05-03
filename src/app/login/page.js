@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
-// ✅ IMPORTANT: Replace with your REAL key
 const supabase = createClient(
   "https://fzsgilsvgmfvvhktghtq.supabase.co",
   "sb_publishable_YATmYcY-DNGjDXnbwmC0dA_NSx1J-rd"
@@ -39,20 +37,17 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FBF8F3] px-6 text-[#1D2834]">
-      {/* Back button */}
-      <Link
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FBF8F3] px-6 py-10 text-[#1D2834]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#F1E7DB_0%,transparent_45%)]" />
+
+      <a
         href="/"
-        className="absolute right-6 top-6 rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
+        className="absolute right-6 top-6 z-20 rounded-2xl border border-[#CAD2DB] bg-white/70 px-5 py-3 text-sm font-medium text-[#1D2834] shadow-sm backdrop-blur hover:bg-[#F4EFE8]"
       >
         Back to Website
-      </Link>
+      </a>
 
-      {/* Background glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#F1E7DB_0%,transparent_42%)]" />
-
-      {/* Card */}
-      <div className="relative w-full max-w-md rounded-[34px] border border-[#E8DED2] bg-white/90 p-8 shadow-[0_28px_70px_rgba(29,40,52,0.12)] backdrop-blur">
+      <div className="relative z-10 w-full max-w-md rounded-[36px] border border-[#E8DED2] bg-white/90 p-8 shadow-[0_28px_70px_rgba(29,40,52,0.12)] backdrop-blur">
         <div className="text-center">
           <div className="text-3xl font-semibold tracking-tight">
             Henig Financial
@@ -69,7 +64,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
+            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 text-[#1D2834] outline-none transition focus:border-[#A86846] focus:bg-white"
           />
 
           <input
@@ -78,7 +73,7 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
+            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 text-[#1D2834] outline-none transition focus:border-[#A86846] focus:bg-white"
           />
 
           {error && (
@@ -90,7 +85,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-[#1F3448] px-5 py-4 font-medium text-white hover:bg-[#2a4258] disabled:opacity-60"
+            className="w-full rounded-2xl bg-[#1F3448] px-5 py-4 font-medium text-white shadow-sm transition hover:bg-[#2a4258] disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
