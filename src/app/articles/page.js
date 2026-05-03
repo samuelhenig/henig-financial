@@ -18,8 +18,7 @@ export default function ArticlesPage() {
             </h1>
 
             <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
-              Clear, simple, and practical insights to help you take control of
-              your money without feeling overwhelmed.
+              Clear, simple, and practical insights to help you take control of your money without feeling overwhelmed.
             </p>
           </div>
 
@@ -31,6 +30,8 @@ export default function ArticlesPage() {
               >
                 <div className="flex flex-wrap items-center gap-3 text-sm text-[#A86846]">
                   <span>{article.readTime}</span>
+                  <span>•</span>
+                  <span>{article.date}</span>
                   <span>•</span>
                   <span>{article.author}</span>
                 </div>
