@@ -1,25 +1,20 @@
 export default function Page() {
   const articles = [
     {
-      title: "Why Budgeting Feels So Hard for Normal Families",
-      description:
-        "A practical look at why most budgets fail and how to build a plan that actually fits real family life.",
-      readTime: "5 min read",
-      href: "/articles/why-budgeting-feels-hard",
-    },
-    {
-      title: "The Difference Between Knowing Your Numbers and Feeling in Control",
-      description:
-        "Knowing what comes in and goes out is only step one. Real calm comes from having a clear system.",
-      readTime: "4 min read",
-      href: "/articles/knowing-your-numbers",
-    },
-    {
       title: "How to Start Getting Financial Clarity Without Feeling Overwhelmed",
       description:
-        "A simple first step for families who want more control but do not know where to begin.",
+        "A simple first step for families who want more control but don’t know where to begin.",
       readTime: "3 min read",
+      author: "Shmily Henig, Founder",
       href: "/articles/start-financial-clarity",
+    },
+    {
+      title: "More guidance coming soon",
+      description:
+        "We’re building practical, real-life financial guidance to help families move forward with clarity and calm.",
+      readTime: "Coming soon",
+      author: "Shmily Henig, Founder",
+      href: "#",
     },
   ];
 
@@ -125,7 +120,7 @@ export default function Page() {
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
             <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-              Articles & Financial Guidance
+              Practical Financial Guidance
             </div>
 
             <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">
@@ -138,14 +133,16 @@ export default function Page() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
             {articles.map((article) => (
               <article
                 key={article.title}
                 className="rounded-[28px] border border-[#E8DED2] bg-[#FBF8F3] p-7 shadow-[0_14px_34px_rgba(29,40,52,0.06)]"
               >
-                <div className="text-sm font-medium text-[#A86846]">
-                  {article.readTime}
+                <div className="flex flex-wrap items-center gap-3 text-sm text-[#A86846]">
+                  <span>{article.readTime}</span>
+                  <span>•</span>
+                  <span>{article.author}</span>
                 </div>
 
                 <h3 className="mt-4 text-2xl font-semibold leading-snug">
@@ -160,7 +157,7 @@ export default function Page() {
                   href={article.href}
                   className="mt-6 inline-block font-medium text-[#1F3448] hover:underline"
                 >
-                  Read article →
+                  {article.href === "#" ? "Coming soon" : "Read article →"}
                 </a>
               </article>
             ))}
