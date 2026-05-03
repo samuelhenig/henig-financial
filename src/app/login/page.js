@@ -25,7 +25,7 @@ export default function LoginPage() {
             />
 
             <a
-              href="/portal"
+              href="/client"
               className="block w-full rounded-2xl bg-[#1F3448] px-5 py-4 text-center font-medium text-white hover:bg-[#2a4258]"
             >
               Login
