@@ -12,14 +12,23 @@ export default function Page() {
             </div>
           </div>
 
-          <a
-            href="https://calendly.com/shmilyhenig/consult"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
-          >
-            Book a Clarity Call
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="/login"
+              className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
+            >
+              Client Login
+            </a>
+
+            <a
+              href="https://calendly.com/shmilyhenig/consult"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
+            >
+              Book a Clarity Call
+            </a>
+          </div>
         </div>
       </header>
 
