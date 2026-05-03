@@ -1,4 +1,5 @@
 import Header from "../../components/Header";
+import Footer from "../../components/Footer";
 import { articles } from "../../data/articles";
 import { notFound } from "next/navigation";
 
@@ -15,6 +16,18 @@ export async function generateMetadata({ params }) {
   return {
     title: `${article.title} | Henig Financial`,
     description: article.description,
+    alternates: {
+      canonical: `https://www.henigfinancial.com/articles/${article.slug}`,
+    },
+    openGraph: {
+      title: `${article.title} | Henig Financial`,
+      description: article.description,
+      url: `https://www.henigfinancial.com/articles/${article.slug}`,
+      siteName: "Henig Financial",
+      type: "article",
+      publishedTime: article.publishedDate,
+      authors: [article.author],
+    },
   };
 }
 
@@ -25,6 +38,10 @@ export default async function ArticlePage({ params }) {
   if (!article) {
     notFound();
   }
+
+  const relatedArticles = articles
+    .filter((item) => item.slug !== article.slug)
+    .slice(0, 3);
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
@@ -55,7 +72,6 @@ export default async function ArticlePage({ params }) {
 
           <div className="mt-8 space-y-6 text-lg leading-8 text-[#1D2834]">
             {article.content.map((block, index) => {
-              // INSERT CTA AFTER 2ND SECTION
               if (index === 2) {
                 return (
                   <div key={index}>
@@ -67,7 +83,6 @@ export default async function ArticlePage({ params }) {
                       <p>{block.text}</p>
                     )}
 
-                    {/* MID CTA */}
                     <div className="mt-8 rounded-2xl border border-[#E8DED2] bg-white p-6 text-center shadow-sm">
                       <p className="text-lg font-medium">
                         Feeling overwhelmed with your finances?
@@ -101,7 +116,6 @@ export default async function ArticlePage({ params }) {
             })}
           </div>
 
-          {/* BOTTOM CTA */}
           <div className="mt-12">
             <a
               href="https://calendly.com/shmilyhenig/consult"
@@ -112,8 +126,38 @@ export default async function ArticlePage({ params }) {
               Schedule a Clarity Call
             </a>
           </div>
+
+          {relatedArticles.length > 0 && (
+            <div className="mt-16 border-t border-[#E8DED2] pt-10">
+              <h2 className="text-2xl font-semibold">Related articles</h2>
+
+              <div className="mt-6 space-y-4">
+                {relatedArticles.map((related) => (
+                  <a
+                    key={related.slug}
+                    href={related.href}
+                    className="block rounded-2xl border border-[#E8DED2] bg-white p-5 hover:bg-[#F4EFE8]"
+                  >
+                    <div className="text-sm text-[#A86846]">
+                      {related.readTime} • {related.date}
+                    </div>
+
+                    <div className="mt-2 text-lg font-semibold text-[#1D2834]">
+                      {related.title}
+                    </div>
+
+                    <p className="mt-2 text-sm leading-6 text-[#5F6977]">
+                      {related.description}
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
+
+      <Footer />
     </main>
   );
 }
