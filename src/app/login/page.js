@@ -1,43 +1,42 @@
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+
 export default function LoginPage() {
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
-      <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
-        <div className="w-full max-w-md rounded-[32px] border border-[#E8DED2] bg-white p-8 shadow-[0_22px_54px_rgba(29,40,52,0.08)]">
-          
-          <div className="text-center">
-            <div className="text-2xl font-semibold">Henig Financial</div>
-            <div className="mt-2 text-xs uppercase tracking-[0.26em] text-[#A86846]">
-              Client Portal
-            </div>
-          </div>
+      <Header />
 
-          <div className="mt-8 space-y-4">
+      <section className="px-6 py-20 md:px-10 lg:px-14">
+        <div className="mx-auto max-w-md rounded-2xl border border-[#E8DED2] bg-white p-8 shadow-sm">
+          <h1 className="text-2xl font-semibold text-center">
+            Client Login
+          </h1>
+
+          <p className="mt-3 text-center text-[#5F6977]">
+            Access your personal financial dashboard.
+          </p>
+
+          <div className="mt-6 space-y-4">
             <input
               type="email"
-              placeholder="Email address"
-              className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
+              placeholder="Email"
+              className="w-full rounded-xl border px-4 py-3"
             />
 
             <input
               type="password"
               placeholder="Password"
-              className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
+              className="w-full rounded-xl border px-4 py-3"
             />
 
-            <a
-              href="/client"
-              className="block w-full rounded-2xl bg-[#1F3448] px-5 py-4 text-center font-medium text-white hover:bg-[#2a4258]"
-            >
-              Login
-            </a>
+            <button className="w-full rounded-xl bg-[#1F3448] px-4 py-3 text-white">
+              Log in
+            </button>
           </div>
-
-          <p className="mt-6 text-center text-sm leading-6 text-[#5F6977]">
-            Access your private Clarity Portal and continue your financial picture.
-          </p>
-
         </div>
-      </div>
+      </section>
+
+      <Footer />
     </main>
   );
 }
