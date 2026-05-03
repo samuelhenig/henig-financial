@@ -11,13 +11,12 @@ const supabase = createClient(
 
 export default function LoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async (e) => {
+  async function handleLogin(e) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -30,67 +29,68 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      router.push("/client");
+      return;
     }
-  };
+
+    router.push("/client");
+  }
 
   return (
-    <main className="min-h-screen bg-[#FBF8F3] flex items-center justify-center px-4 relative">
-      
-      {/* Back button */}
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FBF8F3] px-6 text-[#1D2834]">
       <a
         href="/"
-        className="absolute top-6 right-6 text-sm border border-[#CAD2DB] px-4 py-2 rounded-xl text-[#1D2834] hover:bg-[#F4EFE8]"
+        className="absolute right-6 top-6 rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
       >
         Back to Website
       </a>
 
-      <div className="w-full max-w-md bg-white rounded-2xl border border-[#E9DFD3] p-8 shadow-sm">
-        
-        <div className="text-center mb-6">
-          <div className="text-2xl font-semibold text-[#1D2834]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#F1E7DB_0%,transparent_42%)]" />
+
+      <div className="relative w-full max-w-md rounded-[34px] border border-[#E8DED2] bg-white/88 p-8 shadow-[0_28px_70px_rgba(29,40,52,0.12)] backdrop-blur">
+        <div className="text-center">
+          <div className="text-3xl font-semibold tracking-tight">
             Henig Financial
           </div>
-          <div className="text-xs tracking-[0.25em] text-[#A86846] mt-1">
-            CLIENT PORTAL
+          <div className="mt-2 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+            Client Portal
           </div>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          
+        <form onSubmit={handleLogin} className="mt-9 space-y-4">
           <input
             type="email"
             placeholder="Email address"
             required
-            className="w-full rounded-xl border border-[#CAD2DB] px-4 py-3 text-sm"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
           />
 
           <input
             type="password"
             placeholder="Password"
             required
-            className="w-full rounded-xl border border-[#CAD2DB] px-4 py-3 text-sm"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
           />
 
           {error && (
-            <div className="text-sm text-red-500">{error}</div>
+            <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+              {error}
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#1D3448] text-white py-3 text-sm font-medium hover:opacity-90"
+            className="w-full rounded-2xl bg-[#1F3448] px-5 py-4 font-medium text-white hover:bg-[#2a4258] disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <p className="text-xs text-[#6B7C8F] text-center mt-6">
+        <p className="mt-6 text-center text-sm leading-6 text-[#5F6977]">
           Access your private Clarity Portal and continue your financial picture.
         </p>
       </div>
