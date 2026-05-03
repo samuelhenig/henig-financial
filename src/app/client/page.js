@@ -80,6 +80,59 @@ export default function ClientPage() {
             picture, track your progress, and guide each step of your clarity plan.
           </p>
         </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-[0_14px_34px_rgba(29,40,52,0.06)]">
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+              Clarity Intake
+            </div>
+
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+              Start Your Clarity Plan
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#5F6977]">
+              We’ll guide you step-by-step to organize income, expenses, assets,
+              liabilities, and your full financial picture.
+            </p>
+
+            <button className="mt-6 rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]">
+              Start Clarity Intake
+            </button>
+          </div>
+
+          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-[0_14px_34px_rgba(29,40,52,0.06)]">
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+              Financial Snapshot
+            </div>
+
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+              Your Snapshot
+            </h2>
+
+            <div className="mt-5 space-y-3 text-sm text-[#5F6977]">
+              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
+                <span>Monthly Income</span>
+                <span>—</span>
+              </div>
+
+              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
+                <span>Monthly Expenses</span>
+                <span>—</span>
+              </div>
+
+              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
+                <span>Your Number</span>
+                <span>—</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Net Worth</span>
+                <span>—</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
