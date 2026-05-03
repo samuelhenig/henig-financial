@@ -87,7 +87,7 @@ export default function LoginPage() {
             className="w-full rounded-xl bg-[#1D3448] text-white py-3 text-sm font-medium hover:opacity-90"
           >
             {loading ? "Logging in..." : "Login"}
-          </button.>
+          </button>
         </form>
 
         <p className="text-xs text-[#6B7C8F] text-center mt-6">
