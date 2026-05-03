@@ -4,7 +4,7 @@ export const articles = [
     slug: "start-financial-clarity",
     description:
       "A simple first step for families who want more control but don’t know where to begin.",
-    readTime: "3 min read",
+    readTime: "1 min read",
     date: "May 2026",
     publishedDate: "2026-05-01",
     author: "Shmily Henig, Founder",
@@ -40,7 +40,7 @@ export const articles = [
     slug: "why-budgeting-doesnt-work",
     description:
       "Most budgets fail — not because of discipline, but because of how they’re structured.",
-    readTime: "4 min read",
+    readTime: "1 min read",
     date: "May 2026",
     publishedDate: "2026-05-02",
     author: "Shmily Henig, Founder",
