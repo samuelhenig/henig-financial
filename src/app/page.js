@@ -1,28 +1,11 @@
 import Header from "./components/Header";
+import { articles } from "./data/articles";
 
 export default function Page() {
-  const articles = [
-    {
-      title: "How to Start Getting Financial Clarity Without Feeling Overwhelmed",
-      description:
-        "A simple first step for families who want more control but don’t know where to begin.",
-      readTime: "3 min read",
-      author: "Shmily Henig, Founder",
-      href: "/articles/start-financial-clarity",
-    },
-    {
-      title: "More guidance coming soon",
-      description:
-        "We’re building practical, real-life financial guidance to help families move forward with clarity and calm.",
-      readTime: "Coming soon",
-      author: "Shmily Henig, Founder",
-      href: "#",
-    },
-  ];
+  const homepageArticles = articles.slice(0, 2);
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
-
       <Header />
 
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-20 md:px-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-14 lg:py-28">
@@ -101,7 +84,7 @@ export default function Page() {
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {articles.map((article) => (
+            {homepageArticles.map((article) => (
               <article
                 key={article.title}
                 className="rounded-[28px] border border-[#E8DED2] bg-[#FBF8F3] p-7 shadow-[0_14px_34px_rgba(29,40,52,0.06)]"
@@ -124,10 +107,19 @@ export default function Page() {
                   href={article.href}
                   className="mt-6 inline-block font-medium text-[#1F3448] hover:underline"
                 >
-                  {article.href === "#" ? "Coming soon" : "Read article →"}
+                  Read article →
                 </a>
               </article>
             ))}
+          </div>
+
+          <div className="mt-10">
+            <a
+              href="/articles"
+              className="inline-block rounded-2xl border border-[#CAD2DB] px-6 py-4 font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
+            >
+              View all articles
+            </a>
           </div>
         </div>
       </section>
@@ -173,7 +165,6 @@ export default function Page() {
           </div>
         </div>
       </footer>
-
     </main>
   );
 }
