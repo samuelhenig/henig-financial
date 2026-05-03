@@ -15,53 +15,44 @@ export default function ClientPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    async function loadProfile() {
+      const { data: userData } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (!userData.user) {
         router.push("/login");
         return;
       }
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("client_profiles")
         .select("family_name")
-        .eq("user_id", user.id)
+        .eq("user_id", userData.user.id)
         .single();
 
-      if (data) {
-        setFamilyName(data.family_name);
-      }
-
+      setFamilyName(data?.family_name || "");
       setLoading(false);
-    };
+    }
 
     loadProfile();
-  }, []);
+  }, [router]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-[#FBF8F3] text-[#1D2834]">
+        Loading your dashboard...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] px-6 py-10">
-      <div className="max-w-5xl mx-auto">
-
-        {/* Top bar */}
-        <div className="flex justify-between items-center mb-10">
+    <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
+      <div className="mx-auto max-w-7xl px-6 py-10 md:px-10 lg:px-14">
+        <div className="mb-10 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">
-              Henig Financial
-            </h2>
-            <p className="text-xs tracking-widest text-gray-500">
-              CLIENT DASHBOARD
-            </p>
+            <div className="text-2xl font-semibold">Henig Financial</div>
+            <div className="text-xs uppercase tracking-[0.26em] text-[#A86846]">
+              Client Dashboard
+            </div>
           </div>
 
           <button
@@ -69,32 +60,27 @@ export default function ClientPage() {
               await supabase.auth.signOut();
               router.push("/login");
             }}
-            className="text-sm px-4 py-2 border rounded-lg hover:bg-gray-100"
+            className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm hover:bg-[#F4EFE8]"
           >
             Log out
           </button>
         </div>
 
-        {/* Welcome Card */}
-        <div className="bg-white border rounded-2xl p-10 shadow-sm">
-          <p className="text-sm tracking-widest text-orange-500 mb-3">
-            WELCOME
-          </p>
+        <div className="rounded-[36px] border border-[#E8DED2] bg-white p-10 shadow-[0_22px_54px_rgba(29,40,52,0.08)]">
+          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+            WELCOME {familyName ? familyName.toUpperCase() : ""} FAMILY
+          </div>
 
-          <h1 className="text-4xl font-semibold text-gray-800 mb-6">
-            {familyName ? `${familyName} Family` : "Welcome"}
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight">
+            Your Financial Clarity Dashboard
           </h1>
 
-          <p className="text-gray-600 leading-relaxed">
-            This is your private clarity space. Everything we build here will stay
-            organized, structured, and fully tailored to your family’s financial life.
-            <br /><br />
-            Over time, this will become your single source of truth — where clarity replaces
-            stress, and every decision has a clear direction behind it.
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
+            This is your private space. Here we will build your full financial
+            picture, track your progress, and guide each step of your clarity plan.
           </p>
         </div>
-
       </div>
-    </div>
+    </main>
   );
 }
