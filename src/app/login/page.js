@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
+// ✅ IMPORTANT: Replace with your REAL key
 const supabase = createClient(
   "https://fzsgilsvgmfvvhktghtq.supabase.co",
   "sb_publishable_YATmYcY-DNGjDXnbwmC0dA_NSx1J-rd"
@@ -11,6 +13,7 @@ const supabase = createClient(
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,16 +40,19 @@ export default function LoginPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FBF8F3] px-6 text-[#1D2834]">
-      <a
+      {/* Back button */}
+      <Link
         href="/"
         className="absolute right-6 top-6 rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
       >
         Back to Website
-      </a>
+      </Link>
 
+      {/* Background glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#F1E7DB_0%,transparent_42%)]" />
 
-      <div className="relative w-full max-w-md rounded-[34px] border border-[#E8DED2] bg-white/88 p-8 shadow-[0_28px_70px_rgba(29,40,52,0.12)] backdrop-blur">
+      {/* Card */}
+      <div className="relative w-full max-w-md rounded-[34px] border border-[#E8DED2] bg-white/90 p-8 shadow-[0_28px_70px_rgba(29,40,52,0.12)] backdrop-blur">
         <div className="text-center">
           <div className="text-3xl font-semibold tracking-tight">
             Henig Financial
