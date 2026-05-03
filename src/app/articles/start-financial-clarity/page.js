@@ -3,10 +3,15 @@ import Header from "../../components/Header";
 export default function ArticlePage() {
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
+
+      {/* HEADER */}
       <Header />
 
+      {/* CONTENT */}
       <section className="px-6 py-16 md:px-10 lg:px-14">
         <div className="mx-auto max-w-3xl">
+
+          {/* Back Links */}
           <div className="mb-8 flex gap-4 text-sm">
             <a href="/" className="text-[#A86846] hover:underline">
               ← Home
@@ -16,18 +21,22 @@ export default function ArticlePage() {
             </a>
           </div>
 
+          {/* Meta */}
           <div className="text-sm text-[#A86846]">
             3 min read • Shmily Henig, Founder
           </div>
 
+          {/* Title */}
           <h1 className="mt-4 text-4xl font-semibold leading-tight md:text-5xl">
             How to Start Getting Financial Clarity Without Feeling Overwhelmed
           </h1>
 
+          {/* Intro */}
           <p className="mt-6 text-lg leading-8 text-[#5F6977]">
             Most families don’t have a money problem. They have a clarity problem.
           </p>
 
+          {/* Body */}
           <div className="mt-8 space-y-6 text-lg leading-8 text-[#1D2834]">
             <p>
               Money feels stressful when everything is scattered. Bills, spending,
@@ -62,7 +71,9 @@ export default function ArticlePage() {
               direction. Categories. Priorities. A plan.
             </p>
 
-            <p>Not a perfect plan — just a clear one.</p>
+            <p>
+              Not a perfect plan — just a clear one.
+            </p>
 
             <h2 className="mt-10 text-2xl font-semibold">
               Step 3: Create calm through consistency
@@ -84,6 +95,7 @@ export default function ArticlePage() {
             </p>
           </div>
 
+          {/* CTA */}
           <div className="mt-12">
             <a
               href="https://calendly.com/shmilyhenig/consult"
@@ -94,8 +106,10 @@ export default function ArticlePage() {
               Schedule a Clarity Call
             </a>
           </div>
+
         </div>
       </section>
+
     </main>
   );
 }
