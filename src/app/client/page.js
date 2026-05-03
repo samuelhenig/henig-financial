@@ -10,6 +10,7 @@ const supabase = createClient(
 
 export default function ClientPage() {
   const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     async function checkUser() {
@@ -20,6 +21,7 @@ export default function ClientPage() {
         return;
       }
 
+      setEmail(data.user.email || "");
       setLoading(false);
     }
 
@@ -33,6 +35,9 @@ export default function ClientPage() {
       </div>
     );
   }
+
+  // TEMP — later this will come from database
+  const familyName = "Henig";
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
@@ -60,18 +65,18 @@ export default function ClientPage() {
 
         {/* Main Card */}
         <div className="rounded-[36px] border border-[#E8DED2] bg-white p-10 shadow-[0_22px_54px_rgba(29,40,52,0.08)]">
-          
+
           <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
             Welcome
           </div>
 
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">
-            Your Financial Clarity Dashboard
+            WELCOME {familyName.toUpperCase()} FAMILY
           </h1>
 
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
-            This is your private space. Here we will build your full financial picture,
-            track your progress, and guide each step of your clarity plan.
+            This is your private clarity space. Everything we build here will stay
+            organized, structured, and fully tailored to your family.
           </p>
 
         </div>
