@@ -6,6 +6,7 @@ export const articles = [
       "A simple first step for families who want more control but don’t know where to begin.",
     readTime: "3 min read",
     date: "May 2026",
+    publishedDate: "2026-05-01",
     author: "Shmily Henig, Founder",
     href: "/articles/start-financial-clarity",
     intro:
