@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 const supabase = createClient(
   "https://fzsgilsvgmfvvhktghtq.supabase.co",
-  "YOUR_PUBLISHABLE_KEY_HERE"
+  "sb_publishable_YATmYcY-DNGjDXnbwmC0dA_NSx1J-rd"
 );
 
 export default function ClientPage() {
