@@ -32,33 +32,45 @@ export const articles = [
         type: "paragraph",
         text: "This alone starts to reduce stress, because uncertainty disappears.",
       },
+    ],
+  },
+
+  {
+    title: "Why Budgeting Doesn’t Work for Most Families",
+    slug: "why-budgeting-doesnt-work",
+    description:
+      "Most budgets fail — not because of discipline, but because of how they’re structured.",
+    readTime: "4 min read",
+    date: "May 2026",
+    publishedDate: "2026-05-02",
+    author: "Shmily Henig, Founder",
+    href: "/articles/why-budgeting-doesnt-work",
+    intro:
+      "Most families don’t fail at budgeting. The system they’re using fails them.",
+    content: [
+      {
+        type: "paragraph",
+        text: "Traditional budgets are rigid. Real life isn’t. That mismatch creates frustration quickly.",
+      },
       {
         type: "heading",
-        text: "Step 2: Build a simple structure",
+        text: "The real problem",
       },
       {
         type: "paragraph",
-        text: "Once things are visible, the next step is giving your money direction. Categories. Priorities. A plan.",
-      },
-      {
-        type: "paragraph",
-        text: "Not a perfect plan — just a clear one.",
+        text: "People try to control every dollar perfectly, but life constantly changes. That leads to giving up.",
       },
       {
         type: "heading",
-        text: "Step 3: Create calm through consistency",
+        text: "A better approach",
       },
       {
         type: "paragraph",
-        text: "Financial clarity is not a one-time fix. It’s something that builds over time.",
+        text: "Instead of strict budgeting, focus on structure and clarity. Categories, awareness, and flexibility.",
       },
       {
         type: "paragraph",
-        text: "Small, consistent actions create a sense of control — and that’s what most families are really looking for.",
-      },
-      {
-        type: "paragraph",
-        text: "If you’re feeling overwhelmed, you’re not behind. You just need a clearer path forward.",
+        text: "When your system fits real life, consistency becomes easier.",
       },
     ],
   },
