@@ -1,4 +1,5 @@
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { articles } from "../data/articles";
 
 export default function ArticlesPage() {
@@ -18,7 +19,8 @@ export default function ArticlesPage() {
             </h1>
 
             <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
-              Clear, simple, and practical insights to help you take control of your money without feeling overwhelmed.
+              Clear, simple, and practical insights to help you take control of
+              your money without feeling overwhelmed.
             </p>
           </div>
 
@@ -55,6 +57,8 @@ export default function ArticlesPage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </main>
   );
 }
