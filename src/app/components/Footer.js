@@ -1,26 +1,44 @@
 export default function Footer() {
   return (
-    <footer className="bg-[#152432] text-white mt-20">
-      <div className="mx-auto max-w-7xl px-6 py-12 md:px-10 lg:px-14">
-        <div className="text-xl font-semibold">Henig Financial</div>
-
-        <p className="mt-3 text-white/70">
-          Clear plan. Calm guidance. Real family life.
-        </p>
-
-        <div className="mt-6 space-y-2 text-white/80">
-          <div>(917) 548-1646</div>
-          <div>info@henigfinancial.com</div>
+    <footer className="bg-[#152432] text-white">
+      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 md:grid-cols-3 md:px-10 lg:px-14">
+        <div>
+          <div className="text-2xl font-semibold">Henig Financial</div>
+          <p className="mt-4 leading-7 text-white/68">
+            Clear plan. Calm guidance. Real family life.
+          </p>
         </div>
 
-        <a
-          href="https://calendly.com/shmilyhenig/consult"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-6 inline-block rounded-xl bg-white px-5 py-3 text-[#152432]"
-        >
-          Book a Clarity Call
-        </a>
+        <div>
+          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#D7AA87]">
+            Contact
+          </div>
+          <div className="mt-4 space-y-3 text-white/74">
+            <a href="tel:+19175481646" className="block hover:text-white">
+              (917) 548-1646
+            </a>
+            <a
+              href="mailto:info@henigfinancial.com"
+              className="block hover:text-white"
+            >
+              info@henigfinancial.com
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#D7AA87]">
+            Start
+          </div>
+          <a
+            href="https://calendly.com/shmilyhenig/consult"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-block rounded-2xl bg-white px-5 py-3 text-sm font-medium text-[#152432]"
+          >
+            Book a Clarity Call
+          </a>
+        </div>
       </div>
     </footer>
   );
