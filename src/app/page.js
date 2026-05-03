@@ -1,4 +1,28 @@
 export default function Page() {
+  const articles = [
+    {
+      title: "Why Budgeting Feels So Hard for Normal Families",
+      description:
+        "A practical look at why most budgets fail and how to build a plan that actually fits real family life.",
+      readTime: "5 min read",
+      href: "/articles/why-budgeting-feels-hard",
+    },
+    {
+      title: "The Difference Between Knowing Your Numbers and Feeling in Control",
+      description:
+        "Knowing what comes in and goes out is only step one. Real calm comes from having a clear system.",
+      readTime: "4 min read",
+      href: "/articles/knowing-your-numbers",
+    },
+    {
+      title: "How to Start Getting Financial Clarity Without Feeling Overwhelmed",
+      description:
+        "A simple first step for families who want more control but do not know where to begin.",
+      readTime: "3 min read",
+      href: "/articles/start-financial-clarity",
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <header className="border-b border-[#E9DFD3] bg-[#FBF8F3]">
@@ -13,6 +37,13 @@ export default function Page() {
           </div>
 
           <div className="flex items-center gap-3">
+            <a
+              href="#articles"
+              className="hidden rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8] md:inline-block"
+            >
+              Articles
+            </a>
+
             <a
               href="/login"
               className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
@@ -83,6 +114,56 @@ export default function Page() {
               <div>• Reducing stress around finances</div>
               <div>• Creating more calm and control at home</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="articles"
+        className="border-t border-[#E9DFD3] bg-white/45 px-6 py-20 md:px-10 lg:px-14"
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+              Articles & Financial Guidance
+            </div>
+
+            <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">
+              Clear money guidance you can read at your own pace.
+            </h2>
+
+            <p className="mt-5 text-lg leading-8 text-[#5F6977]">
+              Practical articles for families who want more clarity, less
+              stress, and a better way to handle money at home.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {articles.map((article) => (
+              <article
+                key={article.title}
+                className="rounded-[28px] border border-[#E8DED2] bg-[#FBF8F3] p-7 shadow-[0_14px_34px_rgba(29,40,52,0.06)]"
+              >
+                <div className="text-sm font-medium text-[#A86846]">
+                  {article.readTime}
+                </div>
+
+                <h3 className="mt-4 text-2xl font-semibold leading-snug">
+                  {article.title}
+                </h3>
+
+                <p className="mt-4 leading-7 text-[#5F6977]">
+                  {article.description}
+                </p>
+
+                <a
+                  href={article.href}
+                  className="mt-6 inline-block font-medium text-[#1F3448] hover:underline"
+                >
+                  Read article →
+                </a>
+              </article>
+            ))}
           </div>
         </div>
       </section>
