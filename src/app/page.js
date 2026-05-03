@@ -1,3 +1,5 @@
+import Header from "./components/Header";
+
 export default function Page() {
   const articles = [
     {
@@ -20,43 +22,8 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
-      <header className="border-b border-[#E9DFD3] bg-[#FBF8F3]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 md:px-10 lg:px-14">
-          <div>
-            <div className="text-2xl font-semibold tracking-tight">
-              Henig Financial
-            </div>
-            <div className="text-xs uppercase tracking-[0.26em] text-[#A86846]">
-              Family Financial Coaching
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <a
-              href="#articles"
-              className="hidden rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8] md:inline-block"
-            >
-              Articles
-            </a>
-
-            <a
-              href="/login"
-              className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
-            >
-              Client Login
-            </a>
-
-            <a
-              href="https://calendly.com/shmilyhenig/consult"
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
-            >
-              Book a Clarity Call
-            </a>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <section className="mx-auto grid max-w-7xl gap-10 px-6 py-20 md:px-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-14 lg:py-28">
         <div>
@@ -206,6 +173,7 @@ export default function Page() {
           </div>
         </div>
       </footer>
+
     </main>
   );
 }
