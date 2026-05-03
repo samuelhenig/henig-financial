@@ -2,8 +2,38 @@ import Header from "../../components/Header";
 import { articles } from "../../data/articles";
 import { notFound } from "next/navigation";
 
-export default function ArticlePage({ params }) {
-  const article = articles.find((item) => item.slug === params.slug);
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const article = articles.find((item) => item.slug === slug);
+
+  if (!article) {
+    return {
+      title: "Article Not Found | Henig Financial",
+    };
+  }
+
+  return {
+    title: `${article.title} | Henig Financial`,
+    description: article.description,
+    alternates: {
+      canonical: `https://www.henigfinancial.com/articles/${article.slug}`,
+    },
+    openGraph: {
+      title: `${article.title} | Henig Financial`,
+      description: article.description,
+      url: `https://www.henigfinancial.com/articles/${article.slug}`,
+      siteName: "Henig Financial",
+      type: "article",
+      publishedTime: article.publishedDate,
+      authors: [article.author],
+    },
+  };
+}
+
+export default async function ArticlePage({ params }) {
+  const { slug } = await params;
+
+  const article = articles.find((item) => item.slug === slug);
 
   if (!article) {
     notFound();
