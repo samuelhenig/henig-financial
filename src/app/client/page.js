@@ -13,6 +13,8 @@ export default function ClientPage() {
   const router = useRouter();
   const [familyName, setFamilyName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [intakeOpen, setIntakeOpen] = useState(false);
+  const [answer, setAnswer] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -96,7 +98,10 @@ export default function ClientPage() {
               liabilities, and your full financial picture.
             </p>
 
-            <button className="mt-6 rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]">
+            <button
+              onClick={() => setIntakeOpen(true)}
+              className="mt-6 rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
+            >
               Start Clarity Intake
             </button>
           </div>
@@ -133,6 +138,54 @@ export default function ClientPage() {
             </div>
           </div>
         </div>
+
+        {intakeOpen && (
+          <div className="mt-10 rounded-[32px] border border-[#E8DED2] bg-white p-8 shadow-[0_18px_44px_rgba(29,40,52,0.08)]">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+                  Guided Intake
+                </div>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                  Let’s build your financial picture
+                </h2>
+              </div>
+
+              <div className="text-right text-sm text-[#5F6977]">
+                <div>0% done</div>
+                <div>About 45–60 min total</div>
+              </div>
+            </div>
+
+            <div className="rounded-[24px] bg-[#FBF8F3] p-6">
+              <div className="max-w-2xl rounded-2xl bg-white p-5 text-sm leading-6 text-[#1D2834] shadow-sm">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#A86846]">
+                  Clarity Coach
+                </div>
+                Hi {familyName} family, welcome. I’m ready whenever you are —
+                let’s get started.
+              </div>
+            </div>
+
+            <div className="mt-5 flex gap-3">
+              <input
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder="Type your answer here..."
+                className="flex-1 rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
+              />
+
+              <button className="rounded-2xl bg-[#1F3448] px-6 py-4 text-sm font-medium text-white hover:bg-[#2a4258]">
+                Send
+              </button>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-[#5F6977]">
+              Everything here is private and confidential. Rough numbers are
+              completely fine. You can pause anytime and come back later.
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );
