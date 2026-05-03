@@ -10,7 +10,6 @@ const supabase = createClient(
 
 export default function ClientPage() {
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState("");
 
   useEffect(() => {
     async function checkUser() {
@@ -21,7 +20,6 @@ export default function ClientPage() {
         return;
       }
 
-      setEmail(data.user.email || "");
       setLoading(false);
     }
 
@@ -30,20 +28,17 @@ export default function ClientPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-[#1D2834]">
+      <div className="flex min-h-screen items-center justify-center bg-[#FBF8F3] text-[#1D2834]">
         Loading your dashboard...
       </div>
     );
   }
 
-  // TEMP — later this will come from database
   const familyName = "Henig";
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <div className="mx-auto max-w-7xl px-6 py-10 md:px-10 lg:px-14">
-
-        {/* Header */}
         <div className="mb-10 flex items-center justify-between">
           <div>
             <div className="text-2xl font-semibold">Henig Financial</div>
@@ -63,24 +58,20 @@ export default function ClientPage() {
           </button>
         </div>
 
-        {/* Main Card */}
         <div className="rounded-[36px] border border-[#E8DED2] bg-white p-10 shadow-[0_22px_54px_rgba(29,40,52,0.08)]">
-
           <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-            Welcome
+            WELCOME {familyName.toUpperCase()} FAMILY
           </div>
 
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">
-            WELCOME {familyName.toUpperCase()} FAMILY
+            Your Financial Clarity Dashboard
           </h1>
 
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
-            This is your private clarity space. Everything we build here will stay
-            organized, structured, and fully tailored to your family.
+            This is your private clarity space. Everything we build here will
+            stay organized, structured, and fully tailored to your family.
           </p>
-
         </div>
-
       </div>
     </main>
   );
