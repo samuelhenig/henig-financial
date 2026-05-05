@@ -9,7 +9,7 @@ export const theDropIsPartOfTheJump = {
   author: "Shmily Henig, Founder",
   href: "/articles/the-drop-is-part-of-the-jump",
   intro:
-    "When life feels low, it doesn’t always mean you’re falling behind. Sometimes, the drop is what gives you the strength to rise higher.",
+    "When life feels low, it doesn’t always mean you’re falling behind. The drop is what gives you the strength to rise higher.",
 
   content: [
     {
