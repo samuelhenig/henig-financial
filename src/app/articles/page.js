@@ -1,6 +1,6 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { articles } from "../data/articles";
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
+import { articles } from "@/app/data/articles";
 
 export default function ArticlesPage() {
   return (
