@@ -1,12 +1,8 @@
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
 import { articles } from "@/app/data/articles";
 
 export default function ArticlesPage() {
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
-      <Header />
-
       <section className="px-6 py-16 md:px-10 lg:px-14">
         <div className="mx-auto max-w-5xl">
           <div className="mb-10">
@@ -56,8 +52,6 @@ export default function ArticlesPage() {
           </div>
         </div>
       </section>
-
-      <Footer />
     </main>
   );
 }
