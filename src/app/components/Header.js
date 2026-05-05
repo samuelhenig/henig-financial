@@ -1,41 +1,63 @@
-export default function Header() {
-  return (
-    <header className="border-b border-[#E9DFD3] bg-[#FBF8F3]">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 md:px-10 lg:px-14">
-        <div>
-          <a href="/" className="text-2xl font-semibold tracking-tight">
-            Henig Financial
-          </a>
-          <div className="text-xs uppercase tracking-[0.26em] text-[#A86846]">
-            Family Financial Coaching
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <a
-            href="/articles"
-            className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
-          >
-            Articles
-          </a>
-
-          <a
-            href="/login"
-            className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
-          >
-            Client Login
-          </a>
-
-          <a
-            href="https://calendly.com/shmilyhenig/consult"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
-          >
-            Book a Clarity Call
-          </a>
-        </div>
+<header className="sticky top-0 z-50 border-b border-[#e6ded6] bg-[#f7f3ee]/95 backdrop-blur">
+  <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-10">
+    
+    {/* Logo */}
+    <a href="/" className="leading-tight">
+      <div className="text-3xl font-bold tracking-tight text-[#172333] md:text-4xl">
+        Henig<br />Financial
       </div>
-    </header>
-  );
-}
+      <div className="mt-1 text-xs font-semibold tracking-[0.35em] text-[#a5755c] md:text-sm">
+        FAMILY<br />FINANCIAL<br />COACHING
+      </div>
+    </a>
+
+    {/* Desktop Buttons */}
+    <nav className="hidden items-center gap-4 md:flex">
+      <a
+        href="/articles"
+        className="rounded-3xl border border-[#d8d0c8] px-8 py-5 text-lg font-semibold text-[#172333] transition hover:bg-white"
+      >
+        Articles
+      </a>
+
+      <a
+        href="/client"
+        className="rounded-3xl border border-[#d8d0c8] px-8 py-5 text-lg font-semibold text-[#172333] transition hover:bg-white"
+      >
+        Client Login
+      </a>
+
+      <a
+        href="/clarity-call"
+        className="rounded-3xl bg-[#172f46] px-8 py-5 text-lg font-semibold text-white transition hover:bg-[#102235]"
+      >
+        Book a Clarity Call
+      </a>
+    </nav>
+
+    {/* Mobile Button */}
+    <a
+      href="/clarity-call"
+      className="rounded-2xl bg-[#172f46] px-5 py-4 text-sm font-semibold leading-tight text-white md:hidden"
+    >
+      Book<br />Call
+    </a>
+  </div>
+
+  {/* Mobile Links */}
+  <div className="flex border-t border-[#e6ded6] md:hidden">
+    <a
+      href="/articles"
+      className="flex-1 border-r border-[#e6ded6] py-3 text-center text-sm font-semibold text-[#172333]"
+    >
+      Articles
+    </a>
+
+    <a
+      href="/client"
+      className="flex-1 py-3 text-center text-sm font-semibold text-[#172333]"
+    >
+      Client Login
+    </a>
+  </div>
+</header>
