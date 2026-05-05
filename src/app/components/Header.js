@@ -1,3 +1,5 @@
+"use client";
+
 export default function Header() {
   return (
     <header className="border-b border-[#E9DFD3] bg-[#FBF8F3]">
@@ -13,7 +15,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Desktop Buttons - unchanged */}
+        {/* Desktop Buttons */}
         <div className="hidden items-center gap-3 md:flex">
           <a
             href="/articles"
@@ -42,12 +44,12 @@ export default function Header() {
         {/* Mobile Dropdown */}
         <div className="md:hidden">
           <select
+            defaultValue=""
             onChange={(e) => {
               if (e.target.value) {
                 window.location.href = e.target.value;
               }
             }}
-            defaultValue=""
             className="rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-4 py-2 text-sm font-medium text-[#1D2834]"
           >
             <option value="" disabled>
