@@ -34,7 +34,7 @@ export const theDropIsPartOfTheJump = {
     },
     {
       type: "paragraph",
-      text: "We saw it during 2007. We saw it again during Covid. Things dropped, people were nervous, and then over time, the market came back stronger.",
+      text: "We saw it during 2008. We saw it again during Covid times in 2020. Things dropped, people were nervous, and then over time, the market came back stronger.",
     },
     {
       type: "heading",
