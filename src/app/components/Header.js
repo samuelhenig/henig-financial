@@ -13,7 +13,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Desktop Buttons */}
+        {/* Desktop Buttons - unchanged */}
         <div className="hidden items-center gap-3 md:flex">
           <a
             href="/articles"
@@ -39,16 +39,23 @@ export default function Header() {
           </a>
         </div>
 
-        {/* Mobile */}
-        <div className="flex items-center gap-2 md:hidden">
-          <a
-            href="https://calendly.com/shmilyhenig/consult"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-2xl bg-[#1F3448] px-4 py-2 text-sm font-medium text-white"
+        {/* Mobile Dropdown */}
+        <div className="md:hidden">
+          <select
+            onChange={(e) => {
+              if (e.target.value) {
+                window.location.href = e.target.value;
+              }
+            }}
+            defaultValue=""
+            className="rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-4 py-2 text-sm font-medium text-[#1D2834]"
           >
-            Book Call
-          </a>
+            <option value="" disabled>
+              Menu
+            </option>
+            <option value="/articles">Articles</option>
+            <option value="/login">Client Login</option>
+          </select>
         </div>
       </div>
     </header>
