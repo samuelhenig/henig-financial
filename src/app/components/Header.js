@@ -16,7 +16,7 @@ export default function Header() {
         {/* Desktop Buttons */}
         <div className="hidden items-center gap-3 md:flex">
           <a
-            href="/#articles"
+            href="/articles"
             className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
           >
             Articles
