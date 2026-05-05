@@ -1,31 +1,31 @@
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[#e6ded6] bg-[#f7f3ee]/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-10">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-8">
         <a href="/" className="leading-tight">
-          <div className="text-3xl font-bold tracking-tight text-[#172333] md:text-4xl">
+          <div className="text-2xl font-bold tracking-tight text-[#172333] md:text-3xl">
             Henig<br />Financial
           </div>
-          <div className="mt-1 text-xs font-semibold tracking-[0.35em] text-[#a5755c] md:text-sm">
+          <div className="mt-1 text-[10px] font-semibold tracking-[0.32em] text-[#a5755c] md:text-xs">
             FAMILY<br />FINANCIAL<br />COACHING
           </div>
         </a>
 
-        <nav className="hidden items-center gap-4 md:flex">
-          <a href="/articles" className="rounded-3xl border border-[#d8d0c8] px-8 py-5 text-lg font-semibold text-[#172333] transition hover:bg-white">
+        <nav className="hidden items-center gap-3 md:flex">
+          <a href="/articles" className="rounded-3xl border border-[#d8d0c8] px-6 py-4 text-base font-semibold text-[#172333] transition hover:bg-white">
             Articles
           </a>
 
-          <a href="/client" className="rounded-3xl border border-[#d8d0c8] px-8 py-5 text-lg font-semibold text-[#172333] transition hover:bg-white">
+          <a href="/client" className="rounded-3xl border border-[#d8d0c8] px-6 py-4 text-base font-semibold text-[#172333] transition hover:bg-white">
             Client Login
           </a>
 
-          <a href="/clarity-call" className="rounded-3xl bg-[#172f46] px-8 py-5 text-lg font-semibold text-white transition hover:bg-[#102235]">
+          <a href="/clarity-call" className="rounded-3xl bg-[#172f46] px-6 py-4 text-base font-semibold text-white transition hover:bg-[#102235]">
             Book a Clarity Call
           </a>
         </nav>
 
-        <a href="/clarity-call" className="rounded-2xl bg-[#172f46] px-5 py-4 text-sm font-semibold leading-tight text-white md:hidden">
+        <a href="/clarity-call" className="rounded-2xl bg-[#172f46] px-4 py-3 text-sm font-semibold leading-tight text-white md:hidden">
           Book<br />Call
         </a>
       </div>
