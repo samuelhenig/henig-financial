@@ -1,10 +1,7 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { articles } from "./data/articles";
 
 export default function Page() {
-  const homepageArticles = articles.slice(0, 2);
-
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <Header />
@@ -60,69 +57,6 @@ export default function Page() {
               <div>• Reducing stress around finances</div>
               <div>• Creating more calm and control at home</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="articles"
-        className="border-t border-[#E9DFD3] bg-white/45 px-6 py-20 md:px-10 lg:px-14"
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-              Practical Financial Guidance
-            </div>
-
-            <h2 className="text-4xl font-semibold tracking-tight md:text-5xl">
-              Clear money guidance you can read at your own pace.
-            </h2>
-
-            <p className="mt-5 text-lg leading-8 text-[#5F6977]">
-              Practical articles for families who want more clarity, less
-              stress, and a better way to handle money at home.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {homepageArticles.map((article) => (
-              <article
-                key={article.title}
-                className="rounded-[28px] border border-[#E8DED2] bg-[#FBF8F3] p-7 shadow-[0_14px_34px_rgba(29,40,52,0.06)]"
-              >
-                <div className="flex flex-wrap items-center gap-3 text-sm text-[#A86846]">
-                  <span>{article.readTime}</span>
-                  <span>•</span>
-                  <span>{article.date}</span>
-                  <span>•</span>
-                  <span>{article.author}</span>
-                </div>
-
-                <h3 className="mt-4 text-2xl font-semibold leading-snug">
-                  {article.title}
-                </h3>
-
-                <p className="mt-4 leading-7 text-[#5F6977]">
-                  {article.description}
-                </p>
-
-                <a
-                  href={article.href}
-                  className="mt-6 inline-block font-medium text-[#1F3448] hover:underline"
-                >
-                  Read article →
-                </a>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-10">
-            <a
-              href="/articles"
-              className="inline-block rounded-2xl border border-[#CAD2DB] px-6 py-4 font-medium text-[#1D2834] hover:bg-[#F4EFE8]"
-            >
-              View all articles
-            </a>
           </div>
         </div>
       </section>
