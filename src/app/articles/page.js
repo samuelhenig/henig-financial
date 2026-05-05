@@ -24,34 +24,34 @@ export default function ArticlesPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            {articles.map((article) => (
-              <article
-                key={article.slug}
+            {articles.map((item) => (
+              <div
+                key={item.slug}
                 className="rounded-[28px] border border-[#E8DED2] bg-white p-7 shadow-[0_14px_34px_rgba(29,40,52,0.06)]"
               >
                 <div className="flex flex-wrap items-center gap-3 text-sm text-[#A86846]">
-                  <span>{article.readTime}</span>
+                  <span>{item.readTime}</span>
                   <span>•</span>
-                  <span>{article.date}</span>
+                  <span>{item.date}</span>
                   <span>•</span>
-                  <span>{article.author}</span>
+                  <span>{item.author}</span>
                 </div>
 
                 <h2 className="mt-4 text-2xl font-semibold leading-snug">
-                  {article.title}
+                  {item.title}
                 </h2>
 
                 <p className="mt-4 leading-7 text-[#5F6977]">
-                  {article.description}
+                  {item.description}
                 </p>
 
                 <a
-                  href={article.href}
+                  href={item.href}
                   className="mt-6 inline-block font-medium text-[#1F3448] hover:underline"
                 >
                   Read article →
                 </a>
-              </article>
+              </div>
             ))}
           </div>
         </div>
