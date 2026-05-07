@@ -61,29 +61,6 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="border-t border-[#E8DED2] bg-white px-6 py-20 md:px-10 lg:px-14">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-            Newsletter
-          </div>
-
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-            Financial clarity delivered simply.
-          </h2>
-
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
-            Practical money guidance, financial encouragement, and new articles
-            from Henig Financial.
-          </p>
-
-          <div className="mt-10 flex justify-center">
-            <div className="w-full max-w-xl">
-              <div className="ml-embedded" data-form="Hhi47X"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <Footer />
     </main>
   );
