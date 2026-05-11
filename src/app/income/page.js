@@ -2,6 +2,7 @@ export default function IncomePage() {
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <div className="mx-auto max-w-6xl px-6 py-12">
+        
         <div className="mb-10">
           <div className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
             Income
@@ -17,11 +18,82 @@ export default function IncomePage() {
         </div>
 
         <section className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
-          <h2 className="text-2xl font-semibold">Add Income Source</h2>
+
+          <h2 className="text-2xl font-semibold">
+            Add Income Source
+          </h2>
 
           <p className="mt-2 text-[#5F6977]">
             Start by adding one income source.
           </p>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Income Source Name
+              </label>
+
+              <input
+                type="text"
+                placeholder="Primary Job"
+                className="w-full rounded-2xl border border-[#D8DDE3] bg-white px-4 py-3 outline-none transition focus:border-[#A86846]"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Category
+              </label>
+
+              <select
+                className="w-full rounded-2xl border border-[#D8DDE3] bg-white px-4 py-3 outline-none transition focus:border-[#A86846]"
+              >
+                <option>Salary</option>
+                <option>Business</option>
+                <option>Self-Employed</option>
+                <option>Side Hustle</option>
+                <option>Rental</option>
+                <option>Government</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Amount
+              </label>
+
+              <input
+                type="number"
+                placeholder="5000"
+                className="w-full rounded-2xl border border-[#D8DDE3] bg-white px-4 py-3 outline-none transition focus:border-[#A86846]"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Frequency
+              </label>
+
+              <select
+                className="w-full rounded-2xl border border-[#D8DDE3] bg-white px-4 py-3 outline-none transition focus:border-[#A86846]"
+              >
+                <option>Weekly</option>
+                <option>Biweekly</option>
+                <option>Monthly</option>
+                <option>Yearly</option>
+              </select>
+            </div>
+
+          </div>
+
+          <button
+            className="mt-8 rounded-2xl bg-[#1D2834] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
+          >
+            Add Income Source
+          </button>
+
         </section>
       </div>
     </main>
