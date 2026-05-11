@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { supabase } from "../lib/supabase";
 
 export default function IncomePage() {
   const [sources, setSources] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
     name: "",
@@ -13,6 +15,23 @@ export default function IncomePage() {
     frequency: "Monthly",
     notes: "",
   });
+
+  useEffect(() => {
+    fetchIncomeSources();
+  }, []);
+
+  async function fetchIncomeSources() {
+    const { data, error } = await supabase
+      .from("income_sources")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setSources(data);
+    }
+
+    setLoading(false);
+  }
 
   function monthlyAmount(amount, frequency) {
     const number = Number(amount || 0);
@@ -30,7 +49,7 @@ export default function IncomePage() {
     }, 0);
   }, [sources]);
 
-  function addIncomeSource() {
+  async function addIncomeSource() {
     if (!form.name.trim()) {
       alert("Please enter an income source name.");
       return;
@@ -41,8 +60,7 @@ export default function IncomePage() {
       return;
     }
 
-    const newSource = {
-      id: Date.now(),
+    const payload = {
       name: form.name,
       category: form.category,
       amount: Number(form.amount),
@@ -50,7 +68,19 @@ export default function IncomePage() {
       notes: form.notes,
     };
 
-    setSources((prev) => [...prev, newSource]);
+    const { data, error } = await supabase
+      .from("income_sources")
+      .insert([payload])
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      alert("Error saving income source.");
+      return;
+    }
+
+    setSources((prev) => [data, ...prev]);
 
     setForm({
       name: "",
@@ -61,7 +91,17 @@ export default function IncomePage() {
     });
   }
 
-  function deleteIncomeSource(id) {
+  async function deleteIncomeSource(id) {
+    const { error } = await supabase
+      .from("income_sources")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      alert("Error deleting income source.");
+      return;
+    }
+
     setSources((prev) =>
       prev.filter((source) => source.id !== id)
     );
@@ -275,7 +315,13 @@ export default function IncomePage() {
 
                   </div>
 
-                  {sources.length === 0 ? (
+                  {loading ? (
+
+                    <div className="px-6 py-6 text-sm text-[#5F6977]">
+                      Loading...
+                    </div>
+
+                  ) : sources.length === 0 ? (
 
                     <div className="grid grid-cols-6 items-center px-6 py-5 text-sm">
 
