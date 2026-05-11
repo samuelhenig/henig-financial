@@ -61,6 +61,33 @@ export default function Page() {
         </div>
       </section>
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FinancialService",
+            name: "Henig Financial",
+            alternateName: "Henig Financial Coaching",
+            url: "https://www.henigfinancial.com",
+            description:
+              "Henig Financial provides practical family financial coaching to help families gain clarity, structure, and calm.",
+            areaServed: {
+              "@type": "State",
+              name: "New Jersey",
+            },
+            founder: {
+              "@type": "Person",
+              name: "Samuel Henig",
+            },
+            brand: {
+              "@type": "Brand",
+              name: "Henig Financial",
+            },
+          }),
+        }}
+      />
+
       <Footer />
     </main>
   );
