@@ -1,27 +1,48 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Henig Financial | Family Financial Coaching",
-  description: "Calm financial coaching for real family life.",
+  metadataBase: new URL("https://www.henigfinancial.com"),
+
+  title: {
+    default: "Henig Financial | Family Financial Coaching",
+    template: "%s | Henig Financial",
+  },
+
+  description:
+    "Henig Financial helps families bring clarity, structure, and calm back into their finances through practical coaching and real-life guidance.",
+
+  applicationName: "Henig Financial",
+
+  alternates: {
+    canonical: "https://www.henigfinancial.com",
+  },
+
+  openGraph: {
+    title: "Henig Financial | Family Financial Coaching",
+    description:
+      "Practical family financial coaching to help families gain clarity, structure, and calm.",
+    url: "https://www.henigfinancial.com",
+    siteName: "Henig Financial",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Henig Financial | Family Financial Coaching",
+    description:
+      "Practical family financial coaching to help families gain clarity, structure, and calm.",
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
-              .push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
-              n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
-              (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
-              ml('account', '2325349');
-            `,
-          }}
-        />
-      </head>
-
       <body>{children}</body>
     </html>
   );
