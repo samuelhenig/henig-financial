@@ -20,8 +20,7 @@ const steps = [
   {
     key: "mortgage",
     speaker: "Clarity Coach",
-    question:
-      "What is your approximate monthly mortgage or rent payment?",
+    question: "What is your approximate monthly mortgage or rent payment?",
     placeholder: "Example: 3200",
   },
 ];
@@ -35,9 +34,10 @@ export default function ClientPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [messages, setMessages] = useState([]);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
 
   useEffect(() => {
-    async function loadProfile() {
+    async function loadPage() {
       const { data: userData } = await supabase.auth.getUser();
 
       if (!userData.user) {
@@ -45,22 +45,52 @@ export default function ClientPage() {
         return;
       }
 
-      const { data } = await supabase
+      const { data: profile } = await supabase
         .from("client_profiles")
         .select("family_name")
         .eq("user_id", userData.user.id)
         .single();
 
-      setFamilyName(data?.family_name || "");
+      setFamilyName(profile?.family_name || "");
+
+      await loadExpenses(userData.user.id);
+
       setLoading(false);
     }
 
-    loadProfile();
+    loadPage();
   }, [router]);
+
+  async function loadExpenses(userId) {
+    const { data } = await supabase
+      .from("expenses")
+      .select("amount, frequency")
+      .eq("user_id", userId);
+
+    if (!data) return;
+
+    const total = data.reduce((sum, item) => {
+      const amount = Number(item.amount || 0);
+
+      if (item.frequency === "weekly") return sum + amount * 4.33;
+      if (item.frequency === "yearly") return sum + amount / 12;
+
+      return sum + amount;
+    }, 0);
+
+    setMonthlyExpenses(total);
+  }
+
+  function formatMoney(value) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
 
   function startIntake() {
     setIntakeOpen(true);
-
     setMessages([
       {
         type: "coach",
@@ -68,13 +98,11 @@ export default function ClientPage() {
         text: steps[0].question,
       },
     ]);
-
     setStepIndex(0);
   }
 
   async function saveMortgage(amount) {
     const { data: userData } = await supabase.auth.getUser();
-
     if (!userData.user) return;
 
     await supabase.from("expenses").insert({
@@ -86,6 +114,8 @@ export default function ClientPage() {
       frequency: "monthly",
       notes: "",
     });
+
+    await loadExpenses(userData.user.id);
   }
 
   async function sendAnswer() {
@@ -102,7 +132,6 @@ export default function ClientPage() {
       },
     ];
 
-    // SAVE MORTGAGE TO DATABASE
     if (currentStep.key === "mortgage") {
       await saveMortgage(answer);
     }
@@ -143,10 +172,7 @@ export default function ClientPage() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 flex items-center justify-between">
           <div>
-            <div className="text-2xl font-semibold">
-              Henig Financial
-            </div>
-
+            <div className="text-2xl font-semibold">Henig Financial</div>
             <div className="text-xs uppercase tracking-[0.26em] text-[#A86846]">
               Client Dashboard
             </div>
@@ -178,81 +204,123 @@ export default function ClientPage() {
           </p>
         </div>
 
-        <div className="mt-10 rounded-[32px] border border-[#E8DED2] bg-white p-8 shadow-sm">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-                Guided Intake
-              </div>
-
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                Let’s build your financial picture
-              </h2>
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+              Clarity Intake
             </div>
+
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+              Guided Questions
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#5F6977]">
+              Answer one simple question at a time. The dashboard updates as we
+              organize your numbers.
+            </p>
 
             {!intakeOpen && (
               <button
                 onClick={startIntake}
-                className="rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
+                className="mt-6 rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
               >
                 Start Intake
               </button>
             )}
           </div>
 
-          {intakeOpen && (
-            <>
-              <div className="space-y-4 rounded-[24px] bg-[#FBF8F3] p-6">
-                {messages.map((message, index) => (
+          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+              Financial Snapshot
+            </div>
+
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+              Your Snapshot
+            </h2>
+
+            <div className="mt-5 space-y-3 text-sm text-[#5F6977]">
+              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
+                <span>Monthly Income</span>
+                <span>—</span>
+              </div>
+
+              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
+                <span>Monthly Expenses</span>
+                <span>{formatMoney(monthlyExpenses)}</span>
+              </div>
+
+              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
+                <span>Your Number</span>
+                <span>—</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Net Worth</span>
+                <span>—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {intakeOpen && (
+          <div className="mt-10 rounded-[32px] border border-[#E8DED2] bg-white p-8 shadow-sm">
+            <div className="mb-6">
+              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+                Guided Intake
+              </div>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                Let’s build your financial picture
+              </h2>
+            </div>
+
+            <div className="space-y-4 rounded-[24px] bg-[#FBF8F3] p-6">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    message.type === "client" ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
-                    key={index}
-                    className={`flex ${
+                    className={`max-w-2xl rounded-2xl p-5 text-sm leading-6 shadow-sm ${
                       message.type === "client"
-                        ? "justify-end"
-                        : "justify-start"
+                        ? "bg-[#1F3448] text-white"
+                        : "bg-white text-[#1D2834]"
                     }`}
                   >
                     <div
-                      className={`max-w-2xl rounded-2xl p-5 text-sm leading-6 shadow-sm ${
+                      className={`mb-2 text-xs font-semibold uppercase tracking-[0.18em] ${
                         message.type === "client"
-                          ? "bg-[#1F3448] text-white"
-                          : "bg-white text-[#1D2834]"
+                          ? "text-white/70"
+                          : "text-[#A86846]"
                       }`}
                     >
-                      <div
-                        className={`mb-2 text-xs font-semibold uppercase tracking-[0.18em] ${
-                          message.type === "client"
-                            ? "text-white/70"
-                            : "text-[#A86846]"
-                        }`}
-                      >
-                        {message.speaker}
-                      </div>
-
-                      {message.text}
+                      {message.speaker}
                     </div>
+
+                    {message.text}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+            </div>
 
-              <div className="mt-5 flex gap-3">
-                <input
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder={steps[stepIndex]?.placeholder}
-                  className="flex-1 rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none"
-                />
+            <div className="mt-5 flex gap-3">
+              <input
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder={steps[stepIndex]?.placeholder}
+                className="flex-1 rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none"
+              />
 
-                <button
-                  onClick={sendAnswer}
-                  className="rounded-2xl bg-[#1F3448] px-6 py-4 text-sm font-medium text-white hover:bg-[#2a4258]"
-                >
-                  Send
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+              <button
+                onClick={sendAnswer}
+                className="rounded-2xl bg-[#1F3448] px-6 py-4 text-sm font-medium text-white hover:bg-[#2a4258]"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
