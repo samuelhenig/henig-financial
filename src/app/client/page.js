@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ClientPage() {
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
@@ -18,75 +20,75 @@ export default function ClientPage() {
 
             <div className="space-y-3">
 
-              <a
+              <Link
                 href="/client"
                 className="block rounded-2xl bg-[#20344C] px-4 py-3 text-sm font-medium text-white"
               >
                 Dashboard
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/income"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Income
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/charity"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Charity
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/savings"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Savings
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/investments"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Investments
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/bills"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Bills
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/spending"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Spending
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/assets"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Assets
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/liabilities"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Liabilities
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/goals"
                 className="block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
               >
                 Goals
-              </a>
+              </Link>
 
             </div>
 
