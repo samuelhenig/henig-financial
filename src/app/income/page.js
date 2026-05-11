@@ -2,7 +2,7 @@ export default function IncomePage() {
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        
+
         <div className="mb-10">
           <div className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
             Income
@@ -94,7 +94,50 @@ export default function IncomePage() {
             Add Income Source
           </button>
 
+          <div className="mt-12">
+
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="text-2xl font-semibold">
+                Your Income Sources
+              </h3>
+
+              <div className="text-sm text-[#5F6977]">
+                0 sources added
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-[2rem] border border-[#E6D8C8]">
+
+              <div className="grid grid-cols-5 border-b border-[#EFE5D8] bg-[#FAF6F1] px-6 py-4 text-sm font-semibold text-[#5F6977]">
+                <div>Source</div>
+                <div>Category</div>
+                <div>Monthly Amount</div>
+                <div>Frequency</div>
+                <div>Actions</div>
+              </div>
+
+              <div className="grid grid-cols-5 items-center px-6 py-5 text-sm">
+
+                <div className="font-medium text-[#1D2834]">
+                  No income sources yet
+                </div>
+
+                <div>-</div>
+                <div>-</div>
+                <div>-</div>
+
+                <div className="text-[#A86846]">
+                  Add your first source
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
         </section>
+
       </div>
     </main>
   );
