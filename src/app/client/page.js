@@ -18,6 +18,13 @@ const steps = [
     placeholder: "Type: ready",
   },
   {
+    key: "income",
+    speaker: "Clarity Coach",
+    question:
+      "Let’s start with income. What is one monthly income source you currently have?",
+    placeholder: "Example: Buyer draw 8000",
+  },
+  {
     key: "mortgage",
     speaker: "Clarity Coach",
     question: "What is your approximate monthly mortgage or rent payment?",
@@ -34,6 +41,8 @@ export default function ClientPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [messages, setMessages] = useState([]);
+
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
 
   useEffect(() => {
@@ -53,6 +62,7 @@ export default function ClientPage() {
 
       setFamilyName(profile?.family_name || "");
 
+      await loadIncome(userData.user.id);
       await loadExpenses(userData.user.id);
 
       setLoading(false);
@@ -60,6 +70,26 @@ export default function ClientPage() {
 
     loadPage();
   }, [router]);
+
+  async function loadIncome(userId) {
+    const { data } = await supabase
+      .from("income")
+      .select("amount, frequency")
+      .eq("user_id", userId);
+
+    if (!data) return;
+
+    const total = data.reduce((sum, item) => {
+      const amount = Number(item.amount || 0);
+
+      if (item.frequency === "weekly") return sum + amount * 4.33;
+      if (item.frequency === "yearly") return sum + amount / 12;
+
+      return sum + amount;
+    }, 0);
+
+    setMonthlyIncome(total);
+  }
 
   async function loadExpenses(userId) {
     const { data } = await supabase
@@ -89,6 +119,11 @@ export default function ClientPage() {
     }).format(value);
   }
 
+  function extractAmount(text) {
+    const match = text.replace(/,/g, "").match(/\d+(\.\d+)?/);
+    return match ? Number(match[0]) : 0;
+  }
+
   function startIntake() {
     setIntakeOpen(true);
     setMessages([
@@ -101,7 +136,25 @@ export default function ClientPage() {
     setStepIndex(0);
   }
 
-  async function saveMortgage(amount) {
+  async function saveIncome(text) {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) return;
+
+    const amount = extractAmount(text);
+    const source = text.replace(String(amount), "").trim() || "Income";
+
+    await supabase.from("income").insert({
+      user_id: userData.user.id,
+      source,
+      amount,
+      frequency: "monthly",
+      notes: text,
+    });
+
+    await loadIncome(userData.user.id);
+  }
+
+  async function saveMortgage(amountText) {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return;
 
@@ -110,9 +163,9 @@ export default function ClientPage() {
       bucket: "Bills",
       category: "Housing",
       subcategory: "Mortgage",
-      amount: Number(amount),
+      amount: extractAmount(amountText),
       frequency: "monthly",
-      notes: "",
+      notes: amountText,
     });
 
     await loadExpenses(userData.user.id);
@@ -131,6 +184,10 @@ export default function ClientPage() {
         text: answer,
       },
     ];
+
+    if (currentStep.key === "income") {
+      await saveIncome(answer);
+    }
 
     if (currentStep.key === "mortgage") {
       await saveMortgage(answer);
@@ -151,13 +208,15 @@ export default function ClientPage() {
         type: "coach",
         speaker: "Clarity Coach",
         text:
-          "Perfect. Your first financial item has now been saved into your clarity system.",
+          "Perfect. Your first income and housing item have been saved into your clarity system.",
       });
     }
 
     setMessages(updatedMessages);
     setAnswer("");
   }
+
+  const yourNumber = monthlyIncome - monthlyExpenses;
 
   if (loading) {
     return (
@@ -241,7 +300,7 @@ export default function ClientPage() {
             <div className="mt-5 space-y-3 text-sm text-[#5F6977]">
               <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
                 <span>Monthly Income</span>
-                <span>—</span>
+                <span>{formatMoney(monthlyIncome)}</span>
               </div>
 
               <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
@@ -251,7 +310,13 @@ export default function ClientPage() {
 
               <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
                 <span>Your Number</span>
-                <span>—</span>
+                <span
+                  className={
+                    yourNumber >= 0 ? "text-green-700" : "text-red-600"
+                  }
+                >
+                  {formatMoney(yourNumber)}
+                </span>
               </div>
 
               <div className="flex justify-between">
