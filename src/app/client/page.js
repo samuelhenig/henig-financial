@@ -1,6 +1,3 @@
-# Replace `src/app/client/page.js` with this
-
-```jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -282,12 +279,3 @@ export default function ClientPage() {
     </main>
   );
 }
-```
-
-Then:
-
-1. Save
-2. Commit changes
-3. Refresh `/client`
-
-This is the real layout foundation of the platform.
