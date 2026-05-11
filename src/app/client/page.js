@@ -1,3 +1,6 @@
+# Replace `src/app/client/page.js` with this
+
+```jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,27 +12,17 @@ const supabase = createClient(
   "sb_publishable_YATmYcY-DNGjDXnbwmC0dA_NSx1J-rd"
 );
 
-const steps = [
-  {
-    key: "welcome",
-    speaker: "Clarity Coach",
-    question:
-      "Welcome back. Let’s begin building your financial clarity system together.",
-    placeholder: "Type: ready",
-  },
-  {
-    key: "income",
-    speaker: "Clarity Coach",
-    question:
-      "Let’s start with income. What is one monthly income source you currently have?",
-    placeholder: "Example: Buyer draw 8000",
-  },
-  {
-    key: "mortgage",
-    speaker: "Clarity Coach",
-    question: "What is your approximate monthly mortgage or rent payment?",
-    placeholder: "Example: 3200",
-  },
+const navItems = [
+  "Dashboard",
+  "Income",
+  "Charity",
+  "Savings",
+  "Investments",
+  "Bills",
+  "Spending",
+  "Assets",
+  "Liabilities",
+  "Goals",
 ];
 
 export default function ClientPage() {
@@ -37,16 +30,10 @@ export default function ClientPage() {
 
   const [familyName, setFamilyName] = useState("");
   const [loading, setLoading] = useState(true);
-  const [intakeOpen, setIntakeOpen] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
-  const [answer, setAnswer] = useState("");
-  const [messages, setMessages] = useState([]);
-
-  const [monthlyIncome, setMonthlyIncome] = useState(0);
-  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [activeTab, setActiveTab] = useState("Dashboard");
 
   useEffect(() => {
-    async function loadPage() {
+    async function loadProfile() {
       const { data: userData } = await supabase.auth.getUser();
 
       if (!userData.user) {
@@ -54,339 +41,253 @@ export default function ClientPage() {
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data } = await supabase
         .from("client_profiles")
         .select("family_name")
         .eq("user_id", userData.user.id)
         .single();
 
-      setFamilyName(profile?.family_name || "");
-
-      await loadIncome(userData.user.id);
-      await loadExpenses(userData.user.id);
-
+      setFamilyName(data?.family_name || "");
       setLoading(false);
     }
 
-    loadPage();
+    loadProfile();
   }, [router]);
-
-  async function loadIncome(userId) {
-    const { data } = await supabase
-      .from("income")
-      .select("amount, frequency")
-      .eq("user_id", userId);
-
-    if (!data) return;
-
-    const total = data.reduce((sum, item) => {
-      const amount = Number(item.amount || 0);
-
-      if (item.frequency === "weekly") return sum + amount * 4.33;
-      if (item.frequency === "yearly") return sum + amount / 12;
-
-      return sum + amount;
-    }, 0);
-
-    setMonthlyIncome(total);
-  }
-
-  async function loadExpenses(userId) {
-    const { data } = await supabase
-      .from("expenses")
-      .select("amount, frequency")
-      .eq("user_id", userId);
-
-    if (!data) return;
-
-    const total = data.reduce((sum, item) => {
-      const amount = Number(item.amount || 0);
-
-      if (item.frequency === "weekly") return sum + amount * 4.33;
-      if (item.frequency === "yearly") return sum + amount / 12;
-
-      return sum + amount;
-    }, 0);
-
-    setMonthlyExpenses(total);
-  }
-
-  function formatMoney(value) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(value);
-  }
-
-  function extractAmount(text) {
-    const match = text.replace(/,/g, "").match(/\d+(\.\d+)?/);
-    return match ? Number(match[0]) : 0;
-  }
-
-  function startIntake() {
-    setIntakeOpen(true);
-    setMessages([
-      {
-        type: "coach",
-        speaker: steps[0].speaker,
-        text: steps[0].question,
-      },
-    ]);
-    setStepIndex(0);
-  }
-
-  async function saveIncome(text) {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) return;
-
-    const amount = extractAmount(text);
-    const source = text.replace(String(amount), "").trim() || "Income";
-
-    await supabase.from("income").insert({
-      user_id: userData.user.id,
-      source,
-      amount,
-      frequency: "monthly",
-      notes: text,
-    });
-
-    await loadIncome(userData.user.id);
-  }
-
-  async function saveMortgage(amountText) {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) return;
-
-    await supabase.from("expenses").insert({
-      user_id: userData.user.id,
-      bucket: "Bills",
-      category: "Housing",
-      subcategory: "Mortgage",
-      amount: extractAmount(amountText),
-      frequency: "monthly",
-      notes: amountText,
-    });
-
-    await loadExpenses(userData.user.id);
-  }
-
-  async function sendAnswer() {
-    if (!answer.trim()) return;
-
-    const currentStep = steps[stepIndex];
-
-    const updatedMessages = [
-      ...messages,
-      {
-        type: "client",
-        speaker: "You",
-        text: answer,
-      },
-    ];
-
-    if (currentStep.key === "income") {
-      await saveIncome(answer);
-    }
-
-    if (currentStep.key === "mortgage") {
-      await saveMortgage(answer);
-    }
-
-    const nextIndex = stepIndex + 1;
-
-    if (steps[nextIndex]) {
-      updatedMessages.push({
-        type: "coach",
-        speaker: steps[nextIndex].speaker,
-        text: steps[nextIndex].question,
-      });
-
-      setStepIndex(nextIndex);
-    } else {
-      updatedMessages.push({
-        type: "coach",
-        speaker: "Clarity Coach",
-        text:
-          "Perfect. Your first income and housing item have been saved into your clarity system.",
-      });
-    }
-
-    setMessages(updatedMessages);
-    setAnswer("");
-  }
-
-  const yourNumber = monthlyIncome - monthlyExpenses;
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FBF8F3]">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-[#FBF8F3] text-[#1D2834]">
+        Loading your dashboard...
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#FBF8F3] px-6 py-10 text-[#1D2834]">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 flex items-center justify-between">
-          <div>
-            <div className="text-2xl font-semibold">Henig Financial</div>
-            <div className="text-xs uppercase tracking-[0.26em] text-[#A86846]">
-              Client Dashboard
+    <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
+      <div className="flex min-h-screen">
+
+        {/* Sidebar */}
+        <aside className="hidden w-[280px] border-r border-[#E8DED2] bg-white lg:flex lg:flex-col">
+          <div className="border-b border-[#E8DED2] px-8 py-8">
+            <div className="text-2xl font-semibold tracking-tight">
+              Henig Financial
+            </div>
+
+            <div className="mt-1 text-xs uppercase tracking-[0.24em] text-[#A86846]">
+              Financial Clarity System
             </div>
           </div>
 
-          <button
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.push("/login");
-            }}
-            className="rounded-2xl border border-[#CAD2DB] px-5 py-3 text-sm hover:bg-[#F4EFE8]"
-          >
-            Log out
-          </button>
-        </div>
-
-        <div className="rounded-[36px] border border-[#E8DED2] bg-white p-10 shadow-sm">
-          <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-            WELCOME {familyName.toUpperCase()} FAMILY
-          </div>
-
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight">
-            Your Financial Clarity Dashboard
-          </h1>
-
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
-            This is your private clarity space where we’ll organize your full
-            financial picture together.
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-              Clarity Intake
-            </div>
-
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-              Guided Questions
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-[#5F6977]">
-              Answer one simple question at a time. The dashboard updates as we
-              organize your numbers.
-            </p>
-
-            {!intakeOpen && (
-              <button
-                onClick={startIntake}
-                className="mt-6 rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
-              >
-                Start Intake
-              </button>
-            )}
-          </div>
-
-          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-              Financial Snapshot
-            </div>
-
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-              Your Snapshot
-            </h2>
-
-            <div className="mt-5 space-y-3 text-sm text-[#5F6977]">
-              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
-                <span>Monthly Income</span>
-                <span>{formatMoney(monthlyIncome)}</span>
-              </div>
-
-              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
-                <span>Monthly Expenses</span>
-                <span>{formatMoney(monthlyExpenses)}</span>
-              </div>
-
-              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
-                <span>Your Number</span>
-                <span
-                  className={
-                    yourNumber >= 0 ? "text-green-700" : "text-red-600"
-                  }
-                >
-                  {formatMoney(yourNumber)}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>Net Worth</span>
-                <span>—</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {intakeOpen && (
-          <div className="mt-10 rounded-[32px] border border-[#E8DED2] bg-white p-8 shadow-sm">
-            <div className="mb-6">
-              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-                Guided Intake
-              </div>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                Let’s build your financial picture
-              </h2>
-            </div>
-
-            <div className="space-y-4 rounded-[24px] bg-[#FBF8F3] p-6">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message.type === "client" ? "justify-end" : "justify-start"
+          <div className="flex-1 px-5 py-6">
+            <div className="space-y-1">
+              {navItems.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setActiveTab(item)}
+                  className={`w-full rounded-2xl px-4 py-3 text-left text-sm transition-all ${
+                    activeTab === item
+                      ? "bg-[#1F3448] text-white shadow-sm"
+                      : "text-[#5F6977] hover:bg-[#F6F1EA]"
                   }`}
                 >
-                  <div
-                    className={`max-w-2xl rounded-2xl p-5 text-sm leading-6 shadow-sm ${
-                      message.type === "client"
-                        ? "bg-[#1F3448] text-white"
-                        : "bg-white text-[#1D2834]"
-                    }`}
-                  >
-                    <div
-                      className={`mb-2 text-xs font-semibold uppercase tracking-[0.18em] ${
-                        message.type === "client"
-                          ? "text-white/70"
-                          : "text-[#A86846]"
-                      }`}
-                    >
-                      {message.speaker}
-                    </div>
-
-                    {message.text}
-                  </div>
-                </div>
+                  {item}
+                </button>
               ))}
             </div>
+          </div>
 
-            <div className="mt-5 flex gap-3">
-              <input
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder={steps[stepIndex]?.placeholder}
-                className="flex-1 rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none"
-              />
+          <div className="border-t border-[#E8DED2] p-5">
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                router.push("/login");
+              }}
+              className="w-full rounded-2xl border border-[#D7CDC1] px-4 py-3 text-sm hover:bg-[#F6F1EA]"
+            >
+              Log out
+            </button>
+          </div>
+        </aside>
 
-              <button
-                onClick={sendAnswer}
-                className="rounded-2xl bg-[#1F3448] px-6 py-4 text-sm font-medium text-white hover:bg-[#2a4258]"
-              >
-                Send
-              </button>
+        {/* Main Content */}
+        <div className="flex-1">
+          <div className="mx-auto max-w-7xl px-6 py-8 md:px-10 lg:px-14">
+
+            {/* Mobile Header */}
+            <div className="mb-8 lg:hidden">
+              <div className="text-2xl font-semibold tracking-tight">
+                Henig Financial
+              </div>
+
+              <div className="mt-1 text-xs uppercase tracking-[0.24em] text-[#A86846]">
+                Financial Clarity System
+              </div>
+            </div>
+
+            {/* Top AI Section */}
+            <div className="rounded-[34px] border border-[#E8DED2] bg-white p-8 shadow-[0_18px_44px_rgba(29,40,52,0.06)]">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+                    WELCOME {familyName.toUpperCase()} FAMILY
+                  </div>
+
+                  <h1 className="mt-3 text-4xl font-semibold tracking-tight">
+                    Your Financial Clarity Dashboard
+                  </h1>
+
+                  <p className="mt-4 max-w-3xl text-lg leading-8 text-[#5F6977]">
+                    Simplicity brings clarity. This is your private financial
+                    command center where we organize your money, priorities,
+                    goals, and long-term direction together.
+                  </p>
+                </div>
+
+                <div className="min-w-[260px] rounded-[28px] bg-[#FBF8F3] p-5">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A86846]">
+                    AI Financial Guide
+                  </div>
+
+                  <p className="mt-3 text-sm leading-6 text-[#5F6977]">
+                    Welcome back. Ready to continue building your clarity plan?
+                  </p>
+
+                  <button className="mt-5 rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]">
+                    Continue Intake
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Dashboard Cards */}
+            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+              <div className="rounded-[28px] border border-[#E8DED2] bg-white p-6 shadow-sm">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A86846]">
+                  Your Number
+                </div>
+
+                <div className="mt-4 text-4xl font-semibold tracking-tight">
+                  —
+                </div>
+
+                <div className="mt-2 text-sm text-[#5F6977]">
+                  Income minus expenses
+                </div>
+              </div>
+
+              <div className="rounded-[28px] border border-[#E8DED2] bg-white p-6 shadow-sm">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A86846]">
+                  Monthly Income
+                </div>
+
+                <div className="mt-4 text-4xl font-semibold tracking-tight">
+                  —
+                </div>
+
+                <div className="mt-2 text-sm text-[#5F6977]">
+                  All income sources combined
+                </div>
+              </div>
+
+              <div className="rounded-[28px] border border-[#E8DED2] bg-white p-6 shadow-sm">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A86846]">
+                  Monthly Expenses
+                </div>
+
+                <div className="mt-4 text-4xl font-semibold tracking-tight">
+                  —
+                </div>
+
+                <div className="mt-2 text-sm text-[#5F6977]">
+                  Total monthly outflow
+                </div>
+              </div>
+
+              <div className="rounded-[28px] border border-[#E8DED2] bg-white p-6 shadow-sm">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A86846]">
+                  Net Worth
+                </div>
+
+                <div className="mt-4 text-4xl font-semibold tracking-tight">
+                  —
+                </div>
+
+                <div className="mt-2 text-sm text-[#5F6977]">
+                  Assets minus liabilities
+                </div>
+              </div>
+            </div>
+
+            {/* CSIBS Section */}
+            <div className="mt-8 rounded-[34px] border border-[#E8DED2] bg-white p-8 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+                    CSIBS Method
+                  </div>
+
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                    Your Priority Allocation System
+                  </h2>
+                </div>
+              </div>
+
+              <div className="mt-8 space-y-6">
+
+                {[
+                  ["Charity", "10–20%", "0%"],
+                  ["Savings", "5–10%", "0%"],
+                  ["Investments", "5–10%", "0%"],
+                  ["Bills", "50–60%", "0%"],
+                  ["Spending", "20–30%", "0%"],
+                ].map(([name, range, value]) => (
+                  <div key={name}>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <div>
+                        <span className="font-medium">{name}</span>
+                        <span className="ml-2 text-[#5F6977]">
+                          Target: {range}
+                        </span>
+                      </div>
+
+                      <div className="font-medium">{value}</div>
+                    </div>
+
+                    <div className="h-3 overflow-hidden rounded-full bg-[#EFE7DC]">
+                      <div className="h-full w-0 rounded-full bg-[#4D7C57]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Active Tab Area */}
+            <div className="mt-8 rounded-[34px] border border-[#E8DED2] bg-white p-8 shadow-sm">
+              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+                {activeTab}
+              </div>
+
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+                {activeTab} Section
+              </h2>
+
+              <p className="mt-4 max-w-2xl text-[#5F6977] leading-7">
+                This section will soon contain editable financial data, AI-assisted organization, and spreadsheet-style management for your {activeTab.toLowerCase()} information.
+              </p>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </main>
   );
 }
+```
+
+Then:
+
+1. Save
+2. Commit changes
+3. Refresh `/client`
+
+This is the real layout foundation of the platform.
