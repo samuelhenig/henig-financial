@@ -11,43 +11,24 @@ const supabase = createClient(
 
 const steps = [
   {
-    key: "ready",
+    key: "welcome",
     speaker: "Clarity Coach",
     question:
-      "Hi {familyName} family, welcome. I’m ready whenever you are — let’s get started.",
-    placeholder: "Type: I’m ready",
-  },
-  {
-    key: "names",
-    speaker: "Clarity Coach",
-    question: "Great. Before we start, what are both of your first names?",
-    placeholder: "Example: Shmily and Rachelly",
-  },
-  {
-    key: "kids",
-    speaker: "Clarity Coach",
-    question:
-      "Perfect. Just so I have a clear picture, how many kids do you have, and what are their ages?",
-    placeholder: "Example: 4 kids — ages 14, 8, 3, and baby",
-  },
-  {
-    key: "statements",
-    speaker: "Clarity Coach",
-    question:
-      "Quick tip before we get into numbers: if you have your last 2–3 months of bank or credit card statements nearby, it can help make this more accurate. If not, no pressure — estimates are totally fine and we can refine later. Ready to move into income?",
+      "Welcome back. Let’s begin building your financial clarity system together.",
     placeholder: "Type: ready",
   },
   {
-    key: "income_person_one",
-    speaker: "First income earner",
+    key: "mortgage",
+    speaker: "Clarity Coach",
     question:
-      "Let’s start with income. What are the different ways money comes in for you? For example: salary, business income, commissions, side work, rental income, or anything else.",
-    placeholder: "List income sources here...",
+      "What is your approximate monthly mortgage or rent payment?",
+    placeholder: "Example: 3200",
   },
 ];
 
 export default function ClientPage() {
   const router = useRouter();
+
   const [familyName, setFamilyName] = useState("");
   const [loading, setLoading] = useState(true);
   const [intakeOpen, setIntakeOpen] = useState(false);
@@ -77,75 +58,95 @@ export default function ClientPage() {
     loadProfile();
   }, [router]);
 
-  function formatQuestion(text) {
-    return text.replace("{familyName}", familyName || "your");
-  }
-
   function startIntake() {
     setIntakeOpen(true);
-    setStepIndex(0);
+
     setMessages([
       {
         type: "coach",
         speaker: steps[0].speaker,
-        text: formatQuestion(steps[0].question),
+        text: steps[0].question,
       },
     ]);
+
+    setStepIndex(0);
   }
 
-  function sendAnswer() {
+  async function saveMortgage(amount) {
+    const { data: userData } = await supabase.auth.getUser();
+
+    if (!userData.user) return;
+
+    await supabase.from("expenses").insert({
+      user_id: userData.user.id,
+      bucket: "Bills",
+      category: "Housing",
+      subcategory: "Mortgage",
+      amount: Number(amount),
+      frequency: "monthly",
+      notes: "",
+    });
+  }
+
+  async function sendAnswer() {
     if (!answer.trim()) return;
 
     const currentStep = steps[stepIndex];
-    const userMessage = {
-      type: "client",
-      speaker: "You",
-      text: answer.trim(),
-    };
+
+    const updatedMessages = [
+      ...messages,
+      {
+        type: "client",
+        speaker: "You",
+        text: answer,
+      },
+    ];
+
+    // SAVE MORTGAGE TO DATABASE
+    if (currentStep.key === "mortgage") {
+      await saveMortgage(answer);
+    }
 
     const nextIndex = stepIndex + 1;
-    const nextStep = steps[nextIndex];
 
-    const newMessages = [...messages, userMessage];
-
-    if (nextStep) {
-      newMessages.push({
+    if (steps[nextIndex]) {
+      updatedMessages.push({
         type: "coach",
-        speaker: nextStep.speaker,
-        text: formatQuestion(nextStep.question),
+        speaker: steps[nextIndex].speaker,
+        text: steps[nextIndex].question,
       });
 
       setStepIndex(nextIndex);
     } else {
-      newMessages.push({
+      updatedMessages.push({
         type: "coach",
         speaker: "Clarity Coach",
         text:
-          "Great. That completes the first setup section. Next we’ll go one income source at a time so nothing gets missed or duplicated.",
+          "Perfect. Your first financial item has now been saved into your clarity system.",
       });
     }
 
-    setMessages(newMessages);
+    setMessages(updatedMessages);
     setAnswer("");
   }
 
-  const progress = Math.round(((stepIndex + 1) / steps.length) * 100);
-  const currentStep = steps[stepIndex];
-
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FBF8F3] text-[#1D2834]">
-        Loading your dashboard...
+      <div className="flex min-h-screen items-center justify-center bg-[#FBF8F3]">
+        Loading...
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
-      <div className="mx-auto max-w-7xl px-6 py-10 md:px-10 lg:px-14">
+    <main className="min-h-screen bg-[#FBF8F3] px-6 py-10 text-[#1D2834]">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-10 flex items-center justify-between">
           <div>
-            <div className="text-2xl font-semibold">Henig Financial</div>
+            <div className="text-2xl font-semibold">
+              Henig Financial
+            </div>
+
             <div className="text-xs uppercase tracking-[0.26em] text-[#A86846]">
               Client Dashboard
             </div>
@@ -162,9 +163,9 @@ export default function ClientPage() {
           </button>
         </div>
 
-        <div className="rounded-[36px] border border-[#E8DED2] bg-white p-10 shadow-[0_22px_54px_rgba(29,40,52,0.08)]">
+        <div className="rounded-[36px] border border-[#E8DED2] bg-white p-10 shadow-sm">
           <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-            WELCOME {familyName ? familyName.toUpperCase() : ""} FAMILY
+            WELCOME {familyName.toUpperCase()} FAMILY
           </div>
 
           <h1 className="mt-4 text-4xl font-semibold tracking-tight">
@@ -172,144 +173,86 @@ export default function ClientPage() {
           </h1>
 
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5F6977]">
-            This is your private space. Here we will build your full financial
-            picture, track your progress, and guide each step of your clarity plan.
+            This is your private clarity space where we’ll organize your full
+            financial picture together.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-[0_14px_34px_rgba(29,40,52,0.06)]">
-            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-              Clarity Intake
+        <div className="mt-10 rounded-[32px] border border-[#E8DED2] bg-white p-8 shadow-sm">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
+                Guided Intake
+              </div>
+
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                Let’s build your financial picture
+              </h2>
             </div>
 
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-              Start Your Clarity Plan
-            </h2>
-
-            <p className="mt-3 text-sm leading-6 text-[#5F6977]">
-              We’ll guide you one question at a time so your numbers become clear,
-              organized, and much easier to work with.
-            </p>
-
-            <button
-              onClick={startIntake}
-              className="mt-6 rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
-            >
-              {intakeOpen ? "Restart Intake" : "Start Clarity Intake"}
-            </button>
+            {!intakeOpen && (
+              <button
+                onClick={startIntake}
+                className="rounded-2xl bg-[#1F3448] px-5 py-3 text-sm font-medium text-white hover:bg-[#2a4258]"
+              >
+                Start Intake
+              </button>
+            )}
           </div>
 
-          <div className="rounded-[28px] border border-[#E8DED2] bg-white p-8 shadow-[0_14px_34px_rgba(29,40,52,0.06)]">
-            <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-              Financial Snapshot
-            </div>
-
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-              Your Snapshot
-            </h2>
-
-            <div className="mt-5 space-y-3 text-sm text-[#5F6977]">
-              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
-                <span>Monthly Income</span>
-                <span>—</span>
-              </div>
-              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
-                <span>Monthly Expenses</span>
-                <span>—</span>
-              </div>
-              <div className="flex justify-between border-b border-[#F0E7DE] pb-2">
-                <span>Your Number</span>
-                <span>—</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Net Worth</span>
-                <span>—</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {intakeOpen && (
-          <div className="mt-10 rounded-[32px] border border-[#E8DED2] bg-white p-8 shadow-[0_18px_44px_rgba(29,40,52,0.08)]">
-            <div className="mb-6 flex items-center justify-between gap-6">
-              <div>
-                <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#A86846]">
-                  Guided Intake
-                </div>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                  Let’s build your financial picture
-                </h2>
-              </div>
-
-              <div className="text-right text-sm text-[#5F6977]">
-                <div>{progress}% done</div>
-                <div>About 45–60 min total</div>
-              </div>
-            </div>
-
-            <div className="mb-5 h-2 overflow-hidden rounded-full bg-[#F0E7DE]">
-              <div
-                className="h-full rounded-full bg-[#1F3448]"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            <div className="space-y-4 rounded-[24px] bg-[#FBF8F3] p-6">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message.type === "client" ? "justify-end" : "justify-start"
-                  }`}
-                >
+          {intakeOpen && (
+            <>
+              <div className="space-y-4 rounded-[24px] bg-[#FBF8F3] p-6">
+                {messages.map((message, index) => (
                   <div
-                    className={`max-w-2xl rounded-2xl p-5 text-sm leading-6 shadow-sm ${
+                    key={index}
+                    className={`flex ${
                       message.type === "client"
-                        ? "bg-[#1F3448] text-white"
-                        : "bg-white text-[#1D2834]"
+                        ? "justify-end"
+                        : "justify-start"
                     }`}
                   >
                     <div
-                      className={`mb-2 text-xs font-semibold uppercase tracking-[0.18em] ${
+                      className={`max-w-2xl rounded-2xl p-5 text-sm leading-6 shadow-sm ${
                         message.type === "client"
-                          ? "text-white/70"
-                          : "text-[#A86846]"
+                          ? "bg-[#1F3448] text-white"
+                          : "bg-white text-[#1D2834]"
                       }`}
                     >
-                      {message.speaker}
+                      <div
+                        className={`mb-2 text-xs font-semibold uppercase tracking-[0.18em] ${
+                          message.type === "client"
+                            ? "text-white/70"
+                            : "text-[#A86846]"
+                        }`}
+                      >
+                        {message.speaker}
+                      </div>
+
+                      {message.text}
                     </div>
-                    {message.text}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div className="mt-5 flex gap-3">
-              <input
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") sendAnswer();
-                }}
-                placeholder={currentStep?.placeholder || "Type your answer here..."}
-                className="flex-1 rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none focus:border-[#A86846]"
-              />
+              <div className="mt-5 flex gap-3">
+                <input
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder={steps[stepIndex]?.placeholder}
+                  className="flex-1 rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 outline-none"
+                />
 
-              <button
-                onClick={sendAnswer}
-                className="rounded-2xl bg-[#1F3448] px-6 py-4 text-sm font-medium text-white hover:bg-[#2a4258]"
-              >
-                Send
-              </button>
-            </div>
-
-            <p className="mt-4 text-sm leading-6 text-[#5F6977]">
-              Everything here is private and confidential. Rough numbers are
-              completely fine. You can pause anytime and come back later.
-            </p>
-          </div>
-        )}
+                <button
+                  onClick={sendAnswer}
+                  className="rounded-2xl bg-[#1F3448] px-6 py-4 text-sm font-medium text-white hover:bg-[#2a4258]"
+                >
+                  Send
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </main>
   );
