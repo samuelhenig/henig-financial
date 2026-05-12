@@ -15,7 +15,7 @@ const intakeSteps = [
   },
   {
     key: "spouse_name",
-    question: "If married, what is your spouse’s name? Otherwise type N/A.",
+    question: "What is your spouse’s name?",
   },
   {
     key: "number_of_kids",
@@ -52,7 +52,7 @@ export default function ClientPage() {
     return user;
   }
 
-  function addLocalMessage(role, message) {
+  function addMessage(role, message) {
     setMessages((prev) => [
       ...prev,
       {
@@ -130,17 +130,15 @@ export default function ClientPage() {
   }
 
   async function saveProfileAnswer(userId, key, value) {
-    const cleanValue = value.trim();
-
     const payload = {
       user_id: userId,
       updated_at: new Date().toISOString(),
     };
 
     if (key === "number_of_kids") {
-      payload[key] = Number(cleanValue.replace(/\D/g, "") || 0);
+      payload[key] = Number(value.replace(/\D/g, "") || 0);
     } else {
-      payload[key] = cleanValue;
+      payload[key] = value;
     }
 
     const { error } = await supabase.from("client_profiles").upsert(payload, {
@@ -152,6 +150,14 @@ export default function ClientPage() {
     }
   }
 
+  function looksLikeQuestion(text) {
+    return (
+      text.includes("?") ||
+      text.toLowerCase().includes("did you") ||
+      text.toLowerCase().includes("you updated")
+    );
+  }
+
   async function sendMessage(e) {
     if (e) e.preventDefault();
 
@@ -161,21 +167,33 @@ export default function ClientPage() {
 
     const user = await getUser();
 
-    if (!user) {
-      alert("User not logged in.");
-      return;
-    }
+    if (!user) return;
 
     setSaving(true);
     setChatText("");
 
+    addMessage("user", cleanMessage);
+
     try {
-      addLocalMessage("user", cleanMessage);
+      if (looksLikeQuestion(cleanMessage)) {
+        addMessage(
+          "assistant",
+          "Yes, I saved that information. Let’s continue."
+        );
+
+        addMessage(
+          "assistant",
+          intakeSteps[stepIndex].question
+        );
+
+        setSaving(false);
+        return;
+      }
 
       if (intakeComplete) {
-        addLocalMessage(
+        addMessage(
           "assistant",
-          "Great. Soon this area will help update income, expenses, goals, and more directly through conversation."
+          "Great. Soon you’ll also be able to update income, expenses, assets, debts, and goals directly here."
         );
 
         setSaving(false);
@@ -190,19 +208,54 @@ export default function ClientPage() {
         cleanMessage
       );
 
+      if (currentStep.key === "marital_status") {
+        const answer = cleanMessage.toLowerCase();
+
+        if (answer.includes("single")) {
+          const skipIndex = stepIndex + 2;
+
+          setStepIndex(skipIndex);
+
+          addMessage(
+            "assistant",
+            "Got it. Thanks for sharing."
+          );
+
+          addMessage(
+            "assistant",
+            intakeSteps[skipIndex].question
+          );
+
+          setSaving(false);
+          return;
+        }
+      }
+
+      let confirmation = "Saved.";
+
+      if (currentStep.key === "full_name") {
+        confirmation = `Nice to meet you, ${cleanMessage}.`;
+      }
+
+      if (currentStep.key === "number_of_kids") {
+        confirmation = `Got it. ${cleanMessage} kids.`;
+      }
+
+      addMessage("assistant", confirmation);
+
       const nextIndex = stepIndex + 1;
 
       if (nextIndex >= intakeSteps.length) {
         setIntakeComplete(true);
 
-        addLocalMessage(
+        addMessage(
           "assistant",
-          "Excellent. Your basic profile is now complete. Welcome to your financial dashboard."
+          "Excellent. Your basic financial profile is complete."
         );
       } else {
         setStepIndex(nextIndex);
 
-        addLocalMessage(
+        addMessage(
           "assistant",
           intakeSteps[nextIndex].question
         );
@@ -313,32 +366,6 @@ export default function ClientPage() {
                   </button>
                 </form>
               </div>
-            </div>
-
-            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {[
-                ["Your Number", "—", "Income minus expenses"],
-                ["Monthly Income", "—", "All income sources combined"],
-                ["Monthly Expenses", "—", "Total monthly outflow"],
-                ["Net Worth", "—", "Assets minus liabilities"],
-              ].map(([title, value, subtitle]) => (
-                <div
-                  key={title}
-                  className="rounded-[2rem] border border-[#E6D8C8] bg-white p-7 shadow-sm"
-                >
-                  <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                    {title}
-                  </div>
-
-                  <div className="mt-7 text-4xl font-semibold tracking-tight">
-                    {value}
-                  </div>
-
-                  <div className="mt-4 text-base text-[#5F6977]">
-                    {subtitle}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
