@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 export default function PortalSidebar() {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
   const links = [
@@ -18,8 +20,15 @@ export default function PortalSidebar() {
 
   async function logout() {
     await supabase.auth.signOut();
-
     window.location.href = "/login";
+  }
+
+  function isActive(href) {
+    if (href === "/client") {
+      return pathname === "/client";
+    }
+
+    return pathname.startsWith(href);
   }
 
   return (
@@ -53,15 +62,23 @@ export default function PortalSidebar() {
 
       <nav className="space-y-1">
         {!collapsed &&
-          links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="block rounded-2xl px-3 py-2.5 text-sm font-medium transition hover:bg-[#F4EFE8]"
-            >
-              {link.label}
-            </Link>
-          ))}
+          links.map((link) => {
+            const active = isActive(link.href);
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`block rounded-2xl px-3 py-2.5 text-sm font-medium transition ${
+                  active
+                    ? "bg-[#20344C] text-white"
+                    : "hover:bg-[#F4EFE8]"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
       </nav>
 
       {!collapsed && (
