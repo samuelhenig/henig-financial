@@ -8,14 +8,21 @@ export default function ClientPage() {
   const [messages, setMessages] = useState([]);
   const [chatText, setChatText] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(true);
+  const [sending, setSending] = useState(false);
   const chatBoxRef = useRef(null);
+
+  async function getUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    return user;
+  }
 
   async function loadMessages() {
     setLoadingMessages(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getUser();
 
     if (!user) {
       setLoadingMessages(false);
@@ -44,52 +51,90 @@ export default function ClientPage() {
     }, 50);
   }
 
+  async function loadFinancialContext(userId) {
+    const [incomeRes, expensesRes, assetsRes, liabilitiesRes, goalsRes] =
+      await Promise.all([
+        supabase.from("income").select("*").eq("user_id", userId),
+        supabase.from("expenses").select("*").eq("user_id", userId),
+        supabase.from("assets").select("*").eq("user_id", userId),
+        supabase.from("liabilities").select("*").eq("user_id", userId),
+        supabase.from("goals").select("*").eq("user_id", userId),
+      ]);
+
+    return {
+      income: incomeRes.data || [],
+      expenses: expensesRes.data || [],
+      assets: assetsRes.data || [],
+      liabilities: liabilitiesRes.data || [],
+      goals: goalsRes.data || [],
+    };
+  }
+
+  async function saveMessage(userId, role, message) {
+    const { error } = await supabase.from("ai_messages").insert([
+      {
+        user_id: userId,
+        role,
+        message,
+      },
+    ]);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   async function sendMessage(e) {
     e.preventDefault();
 
     const cleanMessage = chatText.trim();
 
-    if (!cleanMessage) return;
+    if (!cleanMessage || sending) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getUser();
 
     if (!user) {
       alert("User not logged in.");
       return;
     }
 
+    setSending(true);
     setChatText("");
 
-    const { error: userError } = await supabase.from("ai_messages").insert([
-      {
-        user_id: user.id,
-        role: "user",
-        message: cleanMessage,
-      },
-    ]);
+    try {
+      await saveMessage(user.id, "user", cleanMessage);
+      await loadMessages();
 
-    if (userError) {
-      alert(userError.message);
-      return;
+      const context = await loadFinancialContext(user.id);
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: cleanMessage,
+          context,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "AI response failed.");
+      }
+
+      const aiReply =
+        data?.reply ||
+        "I’m sorry, I wasn’t able to respond right now.";
+
+      await saveMessage(user.id, "assistant", aiReply);
+      await loadMessages();
+    } catch (error) {
+      alert(error.message);
     }
 
-    const { error: assistantError } = await supabase.from("ai_messages").insert([
-      {
-        user_id: user.id,
-        role: "assistant",
-        message:
-          "Got it. I saved your message. Soon I’ll be able to respond with real financial guidance based on your income, expenses, assets, liabilities, and goals.",
-      },
-    ]);
-
-    if (assistantError) {
-      alert(assistantError.message);
-      return;
-    }
-
-    loadMessages();
+    setSending(false);
   }
 
   useEffect(() => {
@@ -169,6 +214,14 @@ export default function ClientPage() {
                         </div>
                       </div>
                     ))}
+
+                    {sending && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] rounded-2xl bg-[#FBF8F3] px-4 py-3 text-sm leading-6 text-[#5F6977]">
+                          Thinking...
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -182,9 +235,10 @@ export default function ClientPage() {
 
                   <button
                     type="submit"
-                    className="mt-3 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
+                    disabled={sending}
+                    className="mt-3 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
                   >
-                    Send Message
+                    {sending ? "Sending..." : "Send Message"}
                   </button>
                 </form>
               </div>
