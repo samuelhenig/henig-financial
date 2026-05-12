@@ -15,9 +15,10 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const hash = window.location.hash;
-
-    if (hash.includes("access_token") && hash.includes("type=recovery")) {
+    if (
+      window.location.hash.includes("access_token") &&
+      window.location.hash.includes("type=recovery")
+    ) {
       setResetMode(true);
     }
   }, []);
@@ -26,13 +27,15 @@ export default function LoginPage() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 
-  async function loginUser() {
+  async function loginUser(e) {
+    e.preventDefault();
+
     setMessage("");
 
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail || !password) {
-      setMessage("Please enter your full email and password.");
+      setMessage("Please enter your email and password.");
       return;
     }
 
@@ -69,12 +72,7 @@ export default function LoginPage() {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail) {
-      setMessage("Please enter your full email first.");
-      return;
-    }
-
-    if (!isValidEmail(cleanEmail)) {
-      setMessage("Please enter a valid email address.");
+      setMessage("Please enter your email first.");
       return;
     }
 
@@ -94,7 +92,9 @@ export default function LoginPage() {
     setMessage("Password reset email sent. Check your inbox.");
   }
 
-  async function updatePassword() {
+  async function updatePassword(e) {
+    e.preventDefault();
+
     setMessage("");
 
     if (!newPassword || newPassword.length < 6) {
@@ -116,10 +116,6 @@ export default function LoginPage() {
     }
 
     setMessage("Password updated. You can now log in.");
-
-    setResetMode(false);
-    setPassword("");
-    setNewPassword("");
 
     setTimeout(() => {
       window.location.href = "/login";
@@ -152,13 +148,13 @@ export default function LoginPage() {
           </p>
 
           {message && (
-            <div className="mt-5 rounded-2xl border border-[#E6D8C8] bg-[#FBF8F3] p-4 text-sm text-[#1D2834]">
+            <div className="mt-5 rounded-2xl border border-[#E6D8C8] bg-[#FBF8F3] p-4 text-sm">
               {message}
             </div>
           )}
 
           {resetMode ? (
-            <div className="mt-8 space-y-5">
+            <form onSubmit={updatePassword} className="mt-8 space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-medium">
                   New Password
@@ -174,20 +170,17 @@ export default function LoginPage() {
               </div>
 
               <button
-                type="button"
-                onClick={updatePassword}
+                type="submit"
                 disabled={loading}
                 className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
               >
                 {loading ? "Updating..." : "Update Password"}
               </button>
-            </div>
+            </form>
           ) : (
-            <div className="mt-8 space-y-5">
+            <form onSubmit={loginUser} className="mt-8 space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Email
-                </label>
+                <label className="mb-2 block text-sm font-medium">Email</label>
 
                 <input
                   type="email"
@@ -195,6 +188,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
                   placeholder="you@example.com"
+                  autoComplete="email"
                 />
               </div>
 
@@ -207,17 +201,14 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") loginUser();
-                  }}
                   className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
                   placeholder="Password"
+                  autoComplete="current-password"
                 />
               </div>
 
               <button
-                type="button"
-                onClick={loginUser}
+                type="submit"
                 disabled={loading}
                 className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
               >
@@ -232,7 +223,7 @@ export default function LoginPage() {
               >
                 Forgot password?
               </button>
-            </div>
+            </form>
           )}
         </div>
       </div>
