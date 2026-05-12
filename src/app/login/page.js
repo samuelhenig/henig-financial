@@ -11,6 +11,9 @@ export default function LoginPage() {
   const [resetMode, setResetMode] = useState(false);
   const [newPassword, setNewPassword] = useState("");
 
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
   useEffect(() => {
     const hash = window.location.hash;
 
@@ -24,25 +27,36 @@ export default function LoginPage() {
   }
 
   async function loginUser() {
-    const cleanEmail = email.trim();
+    setMessage("");
+
+    const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail || !password) {
-      alert("Please enter your full email and password.");
+      setMessage("Please enter your full email and password.");
       return;
     }
 
     if (!isValidEmail(cleanEmail)) {
-      alert("Please enter a valid email address.");
+      setMessage("Please enter a valid email address.");
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
-      password,
+      password: password,
     });
 
+    setLoading(false);
+
     if (error) {
-      alert("Login failed: " + error.message);
+      setMessage("Login failed: " + error.message);
+      return;
+    }
+
+    if (!data?.session) {
+      setMessage("Login failed: no session was created.");
       return;
     }
 
@@ -50,52 +64,66 @@ export default function LoginPage() {
   }
 
   async function resetPassword() {
-    const cleanEmail = email.trim();
+    setMessage("");
+
+    const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail) {
-      alert("Please enter your full email first.");
+      setMessage("Please enter your full email first.");
       return;
     }
 
     if (!isValidEmail(cleanEmail)) {
-      alert("Please enter a valid email address.");
+      setMessage("Please enter a valid email address.");
       return;
     }
+
+    setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: "https://www.henigfinancial.com/login",
     });
 
+    setLoading(false);
+
     if (error) {
-      alert("Reset failed: " + error.message);
+      setMessage("Reset failed: " + error.message);
       return;
     }
 
-    alert("Password reset email sent. Check your inbox.");
+    setMessage("Password reset email sent. Check your inbox.");
   }
 
   async function updatePassword() {
+    setMessage("");
+
     if (!newPassword || newPassword.length < 6) {
-      alert("Password must be at least 6 characters.");
+      setMessage("Password must be at least 6 characters.");
       return;
     }
+
+    setLoading(true);
 
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
     });
 
+    setLoading(false);
+
     if (error) {
-      alert("Password update failed: " + error.message);
+      setMessage("Password update failed: " + error.message);
       return;
     }
 
-    alert("Password updated. You can now log in.");
+    setMessage("Password updated. You can now log in.");
 
     setResetMode(false);
     setPassword("");
     setNewPassword("");
 
-    window.location.href = "/login";
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1000);
   }
 
   return (
@@ -123,6 +151,12 @@ export default function LoginPage() {
               : "Log in to access your private financial clarity portal."}
           </p>
 
+          {message && (
+            <div className="mt-5 rounded-2xl border border-[#E6D8C8] bg-[#FBF8F3] p-4 text-sm text-[#1D2834]">
+              {message}
+            </div>
+          )}
+
           {resetMode ? (
             <div className="mt-8 space-y-5">
               <div>
@@ -142,9 +176,10 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={updatePassword}
-                className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
+                disabled={loading}
+                className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
               >
-                Update Password
+                {loading ? "Updating..." : "Update Password"}
               </button>
             </div>
           ) : (
@@ -172,6 +207,9 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") loginUser();
+                  }}
                   className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
                   placeholder="Password"
                 />
@@ -180,15 +218,17 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={loginUser}
-                className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
+                disabled={loading}
+                className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
               >
-                Log In
+                {loading ? "Logging in..." : "Log In"}
               </button>
 
               <button
                 type="button"
                 onClick={resetPassword}
-                className="w-full text-sm font-medium text-[#A86846] hover:underline"
+                disabled={loading}
+                className="w-full text-sm font-medium text-[#A86846] hover:underline disabled:opacity-60"
               >
                 Forgot password?
               </button>
