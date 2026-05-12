@@ -8,7 +8,7 @@ export default function ClientPage() {
   const [messages, setMessages] = useState([]);
   const [chatText, setChatText] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(true);
-  const chatEndRef = useRef(null);
+  const chatBoxRef = useRef(null);
 
   async function loadMessages() {
     setLoadingMessages(true);
@@ -36,6 +36,12 @@ export default function ClientPage() {
 
     setMessages(data || []);
     setLoadingMessages(false);
+
+    setTimeout(() => {
+      if (chatBoxRef.current) {
+        chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+      }
+    }, 50);
   }
 
   async function sendMessage(e) {
@@ -91,7 +97,9 @@ export default function ClientPage() {
   }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+    }
   }, [messages]);
 
   return (
@@ -118,12 +126,15 @@ export default function ClientPage() {
                 </p>
               </div>
 
-              <div className="flex h-[520px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F8F4EF] p-7 shadow-sm">
+              <div className="flex h-[500px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F8F4EF] p-6 shadow-sm">
                 <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
                   AI Financial Guide
                 </div>
 
-                <div className="flex-1 overflow-y-auto rounded-2xl bg-white p-4">
+                <div
+                  ref={chatBoxRef}
+                  className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-white p-4"
+                >
                   {loadingMessages && (
                     <div className="text-sm text-[#5F6977]">
                       Loading chat...
@@ -158,17 +169,15 @@ export default function ClientPage() {
                         </div>
                       </div>
                     ))}
-
-                    <div ref={chatEndRef} />
                   </div>
                 </div>
 
-                <form onSubmit={sendMessage} className="mt-4">
+                <form onSubmit={sendMessage} className="mt-4 shrink-0">
                   <textarea
                     value={chatText}
                     onChange={(e) => setChatText(e.target.value)}
                     placeholder="Ask your financial guide..."
-                    className="h-24 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
+                    className="h-20 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
                   />
 
                   <button
