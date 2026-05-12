@@ -1,26 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  "https://fzsgilsvgmfvvhktghtq.supabase.co",
-  "sb_publishable_YATmYcY-DNGjDXnbwmC0dA_NSx1J-rd"
-);
+import { supabase } from "../../lib/supabase";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  async function loginUser() {
+    if (!email || !password) {
+      alert("Please enter your email and password.");
+      return;
+    }
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -28,72 +19,65 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message);
-      setLoading(false);
+      alert(error.message);
       return;
     }
 
-    router.push("/client");
+    window.location.href = "/client";
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#FBF8F3] px-6 py-10 text-[#1D2834]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#F1E7DB_0%,transparent_45%)]" />
-
-      <a
-        href="/"
-        className="absolute right-6 top-6 z-20 rounded-2xl border border-[#CAD2DB] bg-white/70 px-5 py-3 text-sm font-medium text-[#1D2834] shadow-sm backdrop-blur hover:bg-[#F4EFE8]"
-      >
-        Back to Website
-      </a>
-
-      <div className="relative z-10 w-full max-w-md rounded-[36px] border border-[#E8DED2] bg-white/90 p-8 shadow-[0_28px_70px_rgba(29,40,52,0.12)] backdrop-blur">
-        <div className="text-center">
-          <div className="text-3xl font-semibold tracking-tight">
-            Henig Financial
-          </div>
-          <div className="mt-2 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-            Client Portal
-          </div>
+    <main className="min-h-screen bg-[#FBF8F3] px-6 py-20 text-[#1D2834]">
+      <div className="mx-auto max-w-md rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
+        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+          Client Login
         </div>
 
-        <form onSubmit={handleLogin} className="mt-9 space-y-4">
-          <input
-            type="email"
-            placeholder="Email address"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 text-[#1D2834] outline-none transition focus:border-[#A86846] focus:bg-white"
-          />
+        <h1 className="text-4xl font-semibold tracking-tight">
+          Welcome back
+        </h1>
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-2xl border border-[#CAD2DB] bg-[#FBF8F3] px-5 py-4 text-[#1D2834] outline-none transition focus:border-[#A86846] focus:bg-white"
-          />
+        <p className="mt-4 text-[#5F6977]">
+          Log in to access your private financial clarity portal.
+        </p>
 
-          {error && (
-            <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
-              {error}
-            </div>
-          )}
+        <div className="mt-8 space-y-5">
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Email
+            </label>
+
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Password
+            </label>
+
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
+              placeholder="Password"
+            />
+          </div>
 
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-2xl bg-[#1F3448] px-5 py-4 font-medium text-white shadow-sm transition hover:bg-[#2a4258] disabled:opacity-60"
+            type="button"
+            onClick={loginUser}
+            className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
           >
-            {loading ? "Logging in..." : "Login"}
+            Log In
           </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm leading-6 text-[#5F6977]">
-          Access your private Clarity Portal and continue your financial picture.
-        </p>
+        </div>
       </div>
     </main>
   );
