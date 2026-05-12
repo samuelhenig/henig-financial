@@ -7,8 +7,14 @@ const openai = new OpenAI({
 
 export async function POST(request) {
   try {
-    const body = await request.json();
+    if (!process.env.OPENAI_API_KEY) {
+      return Response.json(
+        { error: "OPENAI_API_KEY is missing in Vercel." },
+        { status: 500 }
+      );
+    }
 
+    const body = await request.json();
     const { message, context } = body;
 
     if (!message) {
@@ -47,7 +53,11 @@ ${message}
     console.error("AI chat error:", error);
 
     return Response.json(
-      { error: "AI response failed." },
+      {
+        error:
+          error?.message ||
+          "AI response failed. Check Vercel function logs.",
+      },
       { status: 500 }
     );
   }
