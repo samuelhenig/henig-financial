@@ -85,7 +85,7 @@ export default function ClientPage() {
   }
 
   async function sendMessage(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     const cleanMessage = chatText.trim();
 
@@ -229,6 +229,12 @@ export default function ClientPage() {
                   <textarea
                     value={chatText}
                     onChange={(e) => setChatText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage(e);
+                      }
+                    }}
                     placeholder="Ask your financial guide..."
                     className="h-20 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
                   />
