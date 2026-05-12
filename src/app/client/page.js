@@ -71,6 +71,30 @@ export default function ClientPage() {
     return Math.round((amount / monthlyIncome) * 100);
   }
 
+  function getBarStatus(percent, min, max) {
+    if (percent >= min && percent <= max) {
+      return {
+        color: "bg-[#7CA982]",
+        label: "On Track",
+      };
+    }
+
+    if (
+      (percent >= min - 5 && percent < min) ||
+      (percent > max && percent <= max + 10)
+    ) {
+      return {
+        color: "bg-[#D6B85A]",
+        label: "Close",
+      };
+    }
+
+    return {
+      color: "bg-[#C96B5C]",
+      label: "Needs Attention",
+    };
+  }
+
   function addMessage(role, message) {
     setMessages((prev) => [
       ...prev,
@@ -111,11 +135,41 @@ export default function ClientPage() {
   const netWorth = totalAssets - totalDebt;
 
   const csibs = [
-    ["Charity", "10–20%", getPercent(0)],
-    ["Savings", "5–10%", getPercent(0)],
-    ["Investments", "5–10%", getPercent(0)],
-    ["Bills", "50–60%", getPercent(monthlyExpenses)],
-    ["Spending", "20–30%", getPercent(0)],
+    {
+      name: "Charity",
+      target: "10–20%",
+      percent: getPercent(0),
+      min: 10,
+      max: 20,
+    },
+    {
+      name: "Savings",
+      target: "5–10%",
+      percent: getPercent(0),
+      min: 5,
+      max: 10,
+    },
+    {
+      name: "Investments",
+      target: "5–10%",
+      percent: getPercent(0),
+      min: 5,
+      max: 10,
+    },
+    {
+      name: "Bills",
+      target: "50–60%",
+      percent: getPercent(monthlyExpenses),
+      min: 50,
+      max: 60,
+    },
+    {
+      name: "Spending",
+      target: "20–30%",
+      percent: getPercent(0),
+      min: 20,
+      max: 30,
+    },
   ];
 
   return (
@@ -243,27 +297,43 @@ export default function ClientPage() {
               </h2>
 
               <div className="mt-8 space-y-7">
-                {csibs.map(([name, target, percent]) => (
-                  <div key={name}>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <div>
-                        <span className="font-medium">{name}</span>{" "}
-                        <span className="text-[#5F6977]">
-                          Target: {target}
-                        </span>
+                {csibs.map((item) => {
+                  const status = getBarStatus(
+                    item.percent,
+                    item.min,
+                    item.max
+                  );
+
+                  return (
+                    <div key={item.name}>
+                      <div className="mb-2 flex items-center justify-between text-sm">
+                        <div>
+                          <span className="font-medium">{item.name}</span>{" "}
+                          <span className="text-[#5F6977]">
+                            Target: {item.target}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-[#5F6977]">
+                            {status.label}
+                          </span>
+
+                          <span>{item.percent}%</span>
+                        </div>
                       </div>
 
-                      <div>{percent}%</div>
+                      <div className="h-3 rounded-full bg-[#EDE5DB]">
+                        <div
+                          className={`h-3 rounded-full ${status.color}`}
+                          style={{
+                            width: `${Math.min(item.percent, 100)}%`,
+                          }}
+                        />
+                      </div>
                     </div>
-
-                    <div className="h-3 rounded-full bg-[#EDE5DB]">
-                      <div
-                        className="h-3 rounded-full bg-[#7CA982]"
-                        style={{ width: `${Math.min(percent, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
