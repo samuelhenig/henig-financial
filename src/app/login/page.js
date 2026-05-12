@@ -26,6 +26,24 @@ export default function LoginPage() {
     window.location.href = "/client";
   }
 
+  async function resetPassword() {
+    if (!email) {
+      alert("Please enter your email first, then click Forgot password.");
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://www.henigfinancial.com/login",
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("Password reset email sent. Check your inbox.");
+  }
+
   return (
     <main className="min-h-screen bg-[#FBF8F3] px-6 py-20 text-[#1D2834]">
       <div className="mx-auto max-w-md rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
@@ -76,6 +94,14 @@ export default function LoginPage() {
             className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
           >
             Log In
+          </button>
+
+          <button
+            type="button"
+            onClick={resetPassword}
+            className="w-full text-sm font-medium text-[#A86846] hover:underline"
+          >
+            Forgot password?
           </button>
         </div>
       </div>
