@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [resetMode, setResetMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+
+  useEffect(() => {
+    const hash = window.location.hash;
+
+    if (hash.includes("access_token") && hash.includes("type=recovery")) {
+      setResetMode(true);
+    }
+  }, []);
 
   function isValidEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -63,6 +74,30 @@ export default function LoginPage() {
     alert("Password reset email sent. Check your inbox.");
   }
 
+  async function updatePassword() {
+    if (!newPassword || newPassword.length < 6) {
+      alert("Password must be at least 6 characters.");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      alert("Password update failed: " + error.message);
+      return;
+    }
+
+    alert("Password updated. You can now log in.");
+
+    setResetMode(false);
+    setPassword("");
+    setNewPassword("");
+
+    window.location.href = "/login";
+  }
+
   return (
     <main className="min-h-screen bg-[#FBF8F3] px-6 py-12 text-[#1D2834]">
       <div className="mx-auto max-w-md">
@@ -75,62 +110,90 @@ export default function LoginPage() {
 
         <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
           <div className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-            Client Login
+            {resetMode ? "Reset Password" : "Client Login"}
           </div>
 
           <h1 className="text-4xl font-semibold tracking-tight">
-            Welcome back
+            {resetMode ? "Create new password" : "Welcome back"}
           </h1>
 
           <p className="mt-4 text-[#5F6977]">
-            Log in to access your private financial clarity portal.
+            {resetMode
+              ? "Enter your new password below."
+              : "Log in to access your private financial clarity portal."}
           </p>
 
-          <div className="mt-8 space-y-5">
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Email
-              </label>
+          {resetMode ? (
+            <div className="mt-8 space-y-5">
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  New Password
+                </label>
 
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
-                placeholder="you@example.com"
-              />
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
+                  placeholder="New password"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={updatePassword}
+                className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
+              >
+                Update Password
+              </button>
             </div>
+          ) : (
+            <div className="mt-8 space-y-5">
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Email
+                </label>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Password
-              </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
+                  placeholder="you@example.com"
+                />
+              </div>
 
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
-                placeholder="Password"
-              />
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Password
+                </label>
+
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
+                  placeholder="Password"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={loginUser}
+                className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
+              >
+                Log In
+              </button>
+
+              <button
+                type="button"
+                onClick={resetPassword}
+                className="w-full text-sm font-medium text-[#A86846] hover:underline"
+              >
+                Forgot password?
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={loginUser}
-              className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              Log In
-            </button>
-
-            <button
-              type="button"
-              onClick={resetPassword}
-              className="w-full text-sm font-medium text-[#A86846] hover:underline"
-            >
-              Forgot password?
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </main>
