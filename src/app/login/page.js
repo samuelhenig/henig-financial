@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 
@@ -7,19 +8,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
   async function loginUser() {
-    if (!email || !password) {
-      alert("Please enter your email and password.");
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !password) {
+      alert("Please enter your full email and password.");
+      return;
+    }
+
+    if (!isValidEmail(cleanEmail)) {
+      alert("Please enter a valid email address.");
       return;
     }
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: cleanEmail,
       password,
     });
 
     if (error) {
-      alert(error.message);
+      alert("Login failed: " + error.message);
       return;
     }
 
@@ -27,17 +39,24 @@ export default function LoginPage() {
   }
 
   async function resetPassword() {
-    if (!email) {
-      alert("Please enter your email first, then click Forgot password.");
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail) {
+      alert("Please enter your full email first.");
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    if (!isValidEmail(cleanEmail)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: "https://www.henigfinancial.com/login",
     });
 
     if (error) {
-      alert(error.message);
+      alert("Reset failed: " + error.message);
       return;
     }
 
@@ -45,64 +64,73 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FBF8F3] px-6 py-20 text-[#1D2834]">
-      <div className="mx-auto max-w-md rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-          Client Login
-        </div>
+    <main className="min-h-screen bg-[#FBF8F3] px-6 py-12 text-[#1D2834]">
+      <div className="mx-auto max-w-md">
+        <Link
+          href="/"
+          className="mb-6 inline-block text-sm font-medium text-[#A86846] hover:underline"
+        >
+          ← Back to home
+        </Link>
 
-        <h1 className="text-4xl font-semibold tracking-tight">
-          Welcome back
-        </h1>
-
-        <p className="mt-4 text-[#5F6977]">
-          Log in to access your private financial clarity portal.
-        </p>
-
-        <div className="mt-8 space-y-5">
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Email
-            </label>
-
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
-              placeholder="you@example.com"
-            />
+        <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+            Client Login
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Password
-            </label>
+          <h1 className="text-4xl font-semibold tracking-tight">
+            Welcome back
+          </h1>
 
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
-              placeholder="Password"
-            />
+          <p className="mt-4 text-[#5F6977]">
+            Log in to access your private financial clarity portal.
+          </p>
+
+          <div className="mt-8 space-y-5">
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Email
+              </label>
+
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Password
+              </label>
+
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-2xl border border-[#D8DDE3] px-4 py-3 outline-none focus:border-[#A86846]"
+                placeholder="Password"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={loginUser}
+              className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
+            >
+              Log In
+            </button>
+
+            <button
+              type="button"
+              onClick={resetPassword}
+              className="w-full text-sm font-medium text-[#A86846] hover:underline"
+            >
+              Forgot password?
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={loginUser}
-            className="w-full rounded-2xl bg-[#20344C] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90"
-          >
-            Log In
-          </button>
-
-          <button
-            type="button"
-            onClick={resetPassword}
-            className="w-full text-sm font-medium text-[#A86846] hover:underline"
-          >
-            Forgot password?
-          </button>
         </div>
       </div>
     </main>
