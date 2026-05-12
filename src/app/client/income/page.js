@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../../lib/supabase";
-import PortalSidebar from "../components/PortalSidebar";
+import { supabase } from "../../../lib/supabase";
+import PortalSidebar from "../../components/PortalSidebar";
 
 export default function IncomePage() {
   const [sources, setSources] = useState([]);
