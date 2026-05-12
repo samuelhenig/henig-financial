@@ -1,68 +1,39 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 export default function PortalSidebar() {
-  const pathname = usePathname();
-
-  const navItems = [
-    {
-      label: "Dashboard",
-      href: "/client",
-    },
-    {
-      label: "Income",
-      href: "/income",
-    },
-    {
-      label: "Expenses",
-      href: "/expenses",
-    },
-    {
-      label: "Assets",
-      href: "/assets",
-    },
-    {
-      label: "Liabilities",
-      href: "/liabilities",
-    },
-  ];
-
   return (
-    <aside className="w-[320px] border-r border-[#E6D8C8] bg-white">
-      <div className="border-b border-[#E6D8C8] px-8 py-10">
-        <div className="text-2xl font-semibold tracking-tight">
-          Henig Financial
-        </div>
-
-        <div className="mt-2 text-xs font-semibold uppercase tracking-[0.32em] text-[#A86846]">
-          Financial Clarity System
+    <aside className="hidden min-h-screen w-64 border-r border-[#E9DFD3] bg-white px-5 py-6 md:block">
+      <div className="mb-8">
+        <div className="text-xl font-semibold">Henig Financial</div>
+        <div className="mt-1 text-xs uppercase tracking-[0.22em] text-[#A86846]">
+          Client Portal
         </div>
       </div>
 
-      <nav className="px-6 py-8">
-        <div className="space-y-3">
+      <nav className="space-y-2">
+        <Link href="/client" className="block rounded-2xl px-4 py-3 text-sm font-medium hover:bg-[#F4EFE8]">
+          Dashboard
+        </Link>
 
-          {navItems.map((item) => {
-            const active = pathname === item.href;
+        <Link href="/client/income" className="block rounded-2xl px-4 py-3 text-sm font-medium hover:bg-[#F4EFE8]">
+          Income
+        </Link>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  active
-                    ? "block rounded-2xl bg-[#20344C] px-4 py-3 text-sm font-medium text-white"
-                    : "block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
-                }
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+        <Link href="/client/expenses" className="block rounded-2xl px-4 py-3 text-sm font-medium hover:bg-[#F4EFE8]">
+          Expenses
+        </Link>
 
-        </div>
+        <Link href="/client/assets" className="block rounded-2xl px-4 py-3 text-sm font-medium hover:bg-[#F4EFE8]">
+          Assets
+        </Link>
+
+        <Link href="/client/liabilities" className="block rounded-2xl px-4 py-3 text-sm font-medium hover:bg-[#F4EFE8]">
+          Liabilities
+        </Link>
+
+        <Link href="/client/goals" className="block rounded-2xl px-4 py-3 text-sm font-medium hover:bg-[#F4EFE8]">
+          Goals
+        </Link>
       </nav>
     </aside>
   );
