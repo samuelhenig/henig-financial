@@ -4,52 +4,71 @@ import { useEffect, useRef, useState } from "react";
 import PortalSidebar from "../components/PortalSidebar";
 import { supabase } from "../../lib/supabase";
 
-const intakeSteps = [
-  {
-    key: "full_name",
-    question: "Welcome. Let’s start simple. What is your full name?",
-  },
-  {
-    key: "marital_status",
-    question: "Are you currently single or married?",
-  },
-  {
-    key: "spouse_name",
-    question: "What is your spouse’s name?",
-  },
-  {
-    key: "number_of_kids",
-    question: "How many kids do you have?",
-  },
-  {
-    key: "kids_ages",
-    question: "What are their ages? If none, type N/A.",
-  },
-  {
-    key: "main_financial_stress",
-    question: "What is your biggest financial stress right now?",
-  },
-  {
-    key: "main_goal",
-    question: "What is the main financial goal you want to work toward?",
-  },
-];
-
 export default function ClientPage() {
-  const [messages, setMessages] = useState([]);
   const [chatText, setChatText] = useState("");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const [intakeComplete, setIntakeComplete] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      id: "welcome",
+      role: "assistant",
+      message: "Welcome back. What would you like to update today?",
+    },
+  ]);
+
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [totalAssets, setTotalAssets] = useState(0);
+  const [totalDebt, setTotalDebt] = useState(0);
 
   const chatBoxRef = useRef(null);
 
-  async function getUser() {
+  async function loadDashboardData() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    return user;
+    if (!user) return;
+
+    const [incomeRes, expensesRes, assetsRes, liabilitiesRes] =
+      await Promise.all([
+        supabase.from("income").select("*").eq("user_id", user.id),
+        supabase.from("expenses").select("*").eq("user_id", user.id),
+        supabase.from("assets").select("*").eq("user_id", user.id),
+        supabase.from("liabilities").select("*").eq("user_id", user.id),
+      ]);
+
+    const incomeTotal = (incomeRes.data || []).reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    );
+
+    const expenseTotal = (expensesRes.data || []).reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    );
+
+    const assetTotal = (assetsRes.data || []).reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    );
+
+    const debtTotal = (liabilitiesRes.data || []).reduce(
+      (sum, item) => sum + Number(item.balance || 0),
+      0
+    );
+
+    setMonthlyIncome(incomeTotal);
+    setMonthlyExpenses(expenseTotal);
+    setTotalAssets(assetTotal);
+    setTotalDebt(debtTotal);
+  }
+
+  function formatMoney(value) {
+    return `$${Number(value || 0).toLocaleString()}`;
+  }
+
+  function getPercent(amount) {
+    if (!monthlyIncome) return 0;
+    return Math.round((amount / monthlyIncome) * 100);
   }
 
   function addMessage(role, message) {
@@ -63,220 +82,41 @@ export default function ClientPage() {
     ]);
   }
 
-  async function loadProfileProgress() {
-    const user = await getUser();
-
-    if (!user) return;
-
-    const { data } = await supabase
-      .from("client_profiles")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!data) {
-      setMessages([
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          message: intakeSteps[0].question,
-        },
-      ]);
-
-      return;
-    }
-
-    let nextStep = 0;
-
-    for (let i = 0; i < intakeSteps.length; i++) {
-      const key = intakeSteps[i].key;
-
-      if (
-        data[key] === null ||
-        data[key] === undefined ||
-        data[key] === ""
-      ) {
-        nextStep = i;
-        break;
-      }
-
-      nextStep = i + 1;
-    }
-
-    if (nextStep >= intakeSteps.length) {
-      setIntakeComplete(true);
-
-      setMessages([
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          message:
-            "Welcome back. What would you like to update or work on today?",
-        },
-      ]);
-
-      return;
-    }
-
-    setStepIndex(nextStep);
-
-    setMessages([
-      {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        message: intakeSteps[nextStep].question,
-      },
-    ]);
-  }
-
-  async function saveProfileAnswer(userId, key, value) {
-    const payload = {
-      user_id: userId,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (key === "number_of_kids") {
-      payload[key] = Number(value.replace(/\D/g, "") || 0);
-    } else {
-      payload[key] = value;
-    }
-
-    const { error } = await supabase.from("client_profiles").upsert(payload, {
-      onConflict: "user_id",
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  function looksLikeQuestion(text) {
-    return (
-      text.includes("?") ||
-      text.toLowerCase().includes("did you") ||
-      text.toLowerCase().includes("you updated")
-    );
-  }
-
   async function sendMessage(e) {
     if (e) e.preventDefault();
 
     const cleanMessage = chatText.trim();
+    if (!cleanMessage) return;
 
-    if (!cleanMessage || saving) return;
-
-    const user = await getUser();
-
-    if (!user) return;
-
-    setSaving(true);
     setChatText("");
-
     addMessage("user", cleanMessage);
 
-    try {
-      if (looksLikeQuestion(cleanMessage)) {
-        addMessage(
-          "assistant",
-          "Yes, I saved that information. Let’s continue."
-        );
-
-        addMessage(
-          "assistant",
-          intakeSteps[stepIndex].question
-        );
-
-        setSaving(false);
-        return;
-      }
-
-      if (intakeComplete) {
-        addMessage(
-          "assistant",
-          "Great. Soon you’ll also be able to update income, expenses, assets, debts, and goals directly here."
-        );
-
-        setSaving(false);
-        return;
-      }
-
-      const currentStep = intakeSteps[stepIndex];
-
-      await saveProfileAnswer(
-        user.id,
-        currentStep.key,
-        cleanMessage
-      );
-
-      if (currentStep.key === "marital_status") {
-        const answer = cleanMessage.toLowerCase();
-
-        if (answer.includes("single")) {
-          const skipIndex = stepIndex + 2;
-
-          setStepIndex(skipIndex);
-
-          addMessage(
-            "assistant",
-            "Got it. Thanks for sharing."
-          );
-
-          addMessage(
-            "assistant",
-            intakeSteps[skipIndex].question
-          );
-
-          setSaving(false);
-          return;
-        }
-      }
-
-      let confirmation = "Saved.";
-
-      if (currentStep.key === "full_name") {
-        confirmation = `Nice to meet you, ${cleanMessage}.`;
-      }
-
-      if (currentStep.key === "number_of_kids") {
-        confirmation = `Got it. ${cleanMessage} kids.`;
-      }
-
-      addMessage("assistant", confirmation);
-
-      const nextIndex = stepIndex + 1;
-
-      if (nextIndex >= intakeSteps.length) {
-        setIntakeComplete(true);
-
-        addMessage(
-          "assistant",
-          "Excellent. Your basic financial profile is complete."
-        );
-      } else {
-        setStepIndex(nextIndex);
-
-        addMessage(
-          "assistant",
-          intakeSteps[nextIndex].question
-        );
-      }
-    } catch (error) {
-      alert(error.message);
-    }
-
-    setSaving(false);
+    addMessage(
+      "assistant",
+      "Saved for now. Soon this guide will update your income, expenses, assets, debts, and goals directly from this chat."
+    );
   }
 
   useEffect(() => {
-    loadProfileProgress();
+    loadDashboardData();
   }, []);
 
   useEffect(() => {
     if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop =
-        chatBoxRef.current.scrollHeight;
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const cashFlow = monthlyIncome - monthlyExpenses;
+  const netWorth = totalAssets - totalDebt;
+
+  const csibs = [
+    ["Charity", "10–20%", getPercent(0)],
+    ["Savings", "5–10%", getPercent(0)],
+    ["Investments", "5–10%", getPercent(0)],
+    ["Bills", "50–60%", getPercent(monthlyExpenses)],
+    ["Spending", "20–30%", getPercent(0)],
+  ];
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
@@ -332,14 +172,6 @@ export default function ClientPage() {
                         </div>
                       </div>
                     ))}
-
-                    {saving && (
-                      <div className="flex justify-start">
-                        <div className="max-w-[85%] rounded-2xl bg-[#FBF8F3] px-4 py-3 text-sm leading-6 text-[#5F6977]">
-                          Saving...
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -359,12 +191,79 @@ export default function ClientPage() {
 
                   <button
                     type="submit"
-                    disabled={saving}
-                    className="mt-3 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                    className="mt-3 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
                   >
-                    {saving ? "Saving..." : "Send"}
+                    Send
                   </button>
                 </form>
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {[
+                ["Your Number", formatMoney(cashFlow), "Income minus expenses"],
+                [
+                  "Monthly Income",
+                  formatMoney(monthlyIncome),
+                  "All income sources combined",
+                ],
+                [
+                  "Monthly Expenses",
+                  formatMoney(monthlyExpenses),
+                  "Total monthly outflow",
+                ],
+                ["Net Worth", formatMoney(netWorth), "Assets minus liabilities"],
+              ].map(([title, value, subtitle]) => (
+                <div
+                  key={title}
+                  className="rounded-[2rem] border border-[#E6D8C8] bg-white p-7 shadow-sm"
+                >
+                  <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                    {title}
+                  </div>
+
+                  <div className="mt-7 text-4xl font-semibold tracking-tight">
+                    {value}
+                  </div>
+
+                  <div className="mt-4 text-base text-[#5F6977]">
+                    {subtitle}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-[2rem] border border-[#E6D8C8] bg-white p-10 shadow-sm">
+              <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                CSIBS Method
+              </div>
+
+              <h2 className="text-3xl font-semibold tracking-tight">
+                Your Priority Allocation System
+              </h2>
+
+              <div className="mt-8 space-y-7">
+                {csibs.map(([name, target, percent]) => (
+                  <div key={name}>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <div>
+                        <span className="font-medium">{name}</span>{" "}
+                        <span className="text-[#5F6977]">
+                          Target: {target}
+                        </span>
+                      </div>
+
+                      <div>{percent}%</div>
+                    </div>
+
+                    <div className="h-3 rounded-full bg-[#EDE5DB]">
+                      <div
+                        className="h-3 rounded-full bg-[#7CA982]"
+                        style={{ width: `${Math.min(percent, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
