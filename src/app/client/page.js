@@ -11,11 +11,11 @@ const intakeSteps = [
   },
   {
     key: "marital_status",
-    question: "Are you married or single?",
+    question: "Are you currently single or married?",
   },
   {
     key: "spouse_name",
-    question: "If you are married, what is your spouse’s name? If not, type N/A.",
+    question: "If married, what is your spouse’s name? Otherwise type N/A.",
   },
   {
     key: "number_of_kids",
@@ -33,26 +33,6 @@ const intakeSteps = [
     key: "main_goal",
     question: "What is the main financial goal you want to work toward?",
   },
-  {
-    key: "income",
-    question: "Now let’s add income. What monthly income should we add? Example: Salary 6500",
-  },
-  {
-    key: "expenses",
-    question: "Now let’s add an expense. Example: Mortgage 2400",
-  },
-  {
-    key: "assets",
-    question: "Now let’s add an asset. Example: Savings 15000",
-  },
-  {
-    key: "liabilities",
-    question: "Now let’s add a debt or liability. Example: Chase card 4200",
-  },
-  {
-    key: "goals",
-    question: "Now let’s add a goal. Example: Emergency fund 25000",
-  },
 ];
 
 export default function ClientPage() {
@@ -60,6 +40,8 @@ export default function ClientPage() {
   const [chatText, setChatText] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [intakeComplete, setIntakeComplete] = useState(false);
+
   const chatBoxRef = useRef(null);
 
   async function getUser() {
@@ -73,25 +55,78 @@ export default function ClientPage() {
   function addLocalMessage(role, message) {
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role, message },
+      {
+        id: crypto.randomUUID(),
+        role,
+        message,
+      },
     ]);
   }
 
-  function parseNameAmount(text) {
-    const amountMatch = text.match(/[\d,]+(\.\d{1,2})?/);
-    const amount = amountMatch
-      ? Number(amountMatch[0].replace(/,/g, ""))
-      : 0;
+  async function loadProfileProgress() {
+    const user = await getUser();
 
-    const name = text
-      .replace(amountMatch?.[0] || "", "")
-      .replace(/\$/g, "")
-      .trim();
+    if (!user) return;
 
-    return {
-      name: name || "Untitled",
-      amount,
-    };
+    const { data } = await supabase
+      .from("client_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!data) {
+      setMessages([
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          message: intakeSteps[0].question,
+        },
+      ]);
+
+      return;
+    }
+
+    let nextStep = 0;
+
+    for (let i = 0; i < intakeSteps.length; i++) {
+      const key = intakeSteps[i].key;
+
+      if (
+        data[key] === null ||
+        data[key] === undefined ||
+        data[key] === ""
+      ) {
+        nextStep = i;
+        break;
+      }
+
+      nextStep = i + 1;
+    }
+
+    if (nextStep >= intakeSteps.length) {
+      setIntakeComplete(true);
+
+      setMessages([
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          message:
+            "Welcome back. What would you like to update or work on today?",
+        },
+      ]);
+
+      return;
+    }
+
+    setStepIndex(nextStep);
+
+    setMessages([
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        message: intakeSteps[nextStep].question,
+      },
+    ]);
   }
 
   async function saveProfileAnswer(userId, key, value) {
@@ -117,114 +152,6 @@ export default function ClientPage() {
     }
   }
 
-  async function saveFinancialAnswer(userId, key, value) {
-    const parsed = parseNameAmount(value);
-
-    if (!parsed.amount) {
-      addLocalMessage(
-        "assistant",
-        "Please include an amount. Example: Salary 6500"
-      );
-      return false;
-    }
-
-    if (key === "income") {
-      const { error } = await supabase.from("income").insert([
-        {
-          user_id: userId,
-          source: parsed.name,
-          amount: parsed.amount,
-          frequency: "Monthly",
-        },
-      ]);
-
-      if (error) throw new Error(error.message);
-
-      addLocalMessage(
-        "assistant",
-        `Added income: ${parsed.name} - $${parsed.amount.toLocaleString()} monthly.`
-      );
-    }
-
-    if (key === "expenses") {
-      const { error } = await supabase.from("expenses").insert([
-        {
-          user_id: userId,
-          name: parsed.name,
-          category: "Other",
-          amount: parsed.amount,
-          frequency: "Monthly",
-        },
-      ]);
-
-      if (error) throw new Error(error.message);
-
-      addLocalMessage(
-        "assistant",
-        `Added expense: ${parsed.name} - $${parsed.amount.toLocaleString()} monthly.`
-      );
-    }
-
-    if (key === "assets") {
-      const { error } = await supabase.from("assets").insert([
-        {
-          user_id: userId,
-          name: parsed.name,
-          category: "Other",
-          amount: parsed.amount,
-        },
-      ]);
-
-      if (error) throw new Error(error.message);
-
-      addLocalMessage(
-        "assistant",
-        `Added asset: ${parsed.name} - $${parsed.amount.toLocaleString()}.`
-      );
-    }
-
-    if (key === "liabilities") {
-      const { error } = await supabase.from("liabilities").insert([
-        {
-          user_id: userId,
-          name: parsed.name,
-          category: "Other",
-          balance: parsed.amount,
-          monthly_payment: 0,
-          interest_rate: 0,
-        },
-      ]);
-
-      if (error) throw new Error(error.message);
-
-      addLocalMessage(
-        "assistant",
-        `Added debt: ${parsed.name} - $${parsed.amount.toLocaleString()}.`
-      );
-    }
-
-    if (key === "goals") {
-      const { error } = await supabase.from("goals").insert([
-        {
-          user_id: userId,
-          title: parsed.name,
-          category: "Other",
-          target_amount: parsed.amount,
-          current_amount: 0,
-        },
-      ]);
-
-      if (error) throw new Error(error.message);
-
-      addLocalMessage(
-        "assistant",
-        `Added goal: ${parsed.name} - target $${parsed.amount.toLocaleString()}.`
-      );
-    }
-
-    return true;
-  }
-
   async function sendMessage(e) {
     if (e) e.preventDefault();
 
@@ -243,44 +170,41 @@ export default function ClientPage() {
     setChatText("");
 
     try {
-      const currentStep = intakeSteps[stepIndex];
-
       addLocalMessage("user", cleanMessage);
 
-      if (
-        [
-          "full_name",
-          "marital_status",
-          "spouse_name",
-          "number_of_kids",
-          "kids_ages",
-          "main_financial_stress",
-          "main_goal",
-        ].includes(currentStep.key)
-      ) {
-        await saveProfileAnswer(user.id, currentStep.key, cleanMessage);
-      } else {
-        const saved = await saveFinancialAnswer(
-          user.id,
-          currentStep.key,
-          cleanMessage
+      if (intakeComplete) {
+        addLocalMessage(
+          "assistant",
+          "Great. Soon this area will help update income, expenses, goals, and more directly through conversation."
         );
 
-        if (!saved) {
-          setSaving(false);
-          return;
-        }
+        setSaving(false);
+        return;
       }
+
+      const currentStep = intakeSteps[stepIndex];
+
+      await saveProfileAnswer(
+        user.id,
+        currentStep.key,
+        cleanMessage
+      );
 
       const nextIndex = stepIndex + 1;
 
-      if (nextIndex < intakeSteps.length) {
-        setStepIndex(nextIndex);
-        addLocalMessage("assistant", intakeSteps[nextIndex].question);
-      } else {
+      if (nextIndex >= intakeSteps.length) {
+        setIntakeComplete(true);
+
         addLocalMessage(
           "assistant",
-          "Great. Your basic financial intake is saved. You can continue updating income, expenses, assets, debts, and goals from the sidebar anytime."
+          "Excellent. Your basic profile is now complete. Welcome to your financial dashboard."
+        );
+      } else {
+        setStepIndex(nextIndex);
+
+        addLocalMessage(
+          "assistant",
+          intakeSteps[nextIndex].question
         );
       }
     } catch (error) {
@@ -291,18 +215,13 @@ export default function ClientPage() {
   }
 
   useEffect(() => {
-    setMessages([
-      {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        message: intakeSteps[0].question,
-      },
-    ]);
+    loadProfileProgress();
   }, []);
 
   useEffect(() => {
     if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+      chatBoxRef.current.scrollTop =
+        chatBoxRef.current.scrollHeight;
     }
   }, [messages]);
 
@@ -420,43 +339,6 @@ export default function ClientPage() {
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-8 rounded-[2rem] border border-[#E6D8C8] bg-white p-10 shadow-sm">
-              <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                CSIBS Method
-              </div>
-
-              <h2 className="text-3xl font-semibold tracking-tight">
-                Your Priority Allocation System
-              </h2>
-
-              <div className="mt-8 space-y-7">
-                {[
-                  ["Charity", "10–20%"],
-                  ["Savings", "5–10%"],
-                  ["Investments", "5–10%"],
-                  ["Bills", "50–60%"],
-                  ["Spending", "20–30%"],
-                ].map(([name, target]) => (
-                  <div key={name}>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <div>
-                        <span className="font-medium">{name}</span>{" "}
-                        <span className="text-[#5F6977]">
-                          Target: {target}
-                        </span>
-                      </div>
-
-                      <div>0%</div>
-                    </div>
-
-                    <div className="h-3 rounded-full bg-[#EDE5DB]">
-                      <div className="h-3 w-0 rounded-full bg-[#7CA982]" />
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </section>
