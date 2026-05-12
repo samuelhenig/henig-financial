@@ -4,11 +4,62 @@ import { useEffect, useRef, useState } from "react";
 import PortalSidebar from "../components/PortalSidebar";
 import { supabase } from "../../lib/supabase";
 
+const intakeSteps = [
+  {
+    key: "full_name",
+    question: "Welcome. Let’s start simple. What is your full name?",
+  },
+  {
+    key: "marital_status",
+    question: "Are you married, single, divorced, or widowed?",
+  },
+  {
+    key: "spouse_name",
+    question: "If you are married, what is your spouse’s name? If not, type N/A.",
+  },
+  {
+    key: "number_of_kids",
+    question: "How many kids do you have?",
+  },
+  {
+    key: "kids_ages",
+    question: "What are their ages? If none, type N/A.",
+  },
+  {
+    key: "main_financial_stress",
+    question: "What is your biggest financial stress right now?",
+  },
+  {
+    key: "main_goal",
+    question: "What is the main financial goal you want to work toward?",
+  },
+  {
+    key: "income",
+    question: "Now let’s add income. What monthly income should we add? Example: Salary 6500",
+  },
+  {
+    key: "expenses",
+    question: "Now let’s add an expense. Example: Mortgage 2400",
+  },
+  {
+    key: "assets",
+    question: "Now let’s add an asset. Example: Savings 15000",
+  },
+  {
+    key: "liabilities",
+    question: "Now let’s add a debt or liability. Example: Chase card 4200",
+  },
+  {
+    key: "goals",
+    question: "Now let’s add a goal. Example: Emergency fund 25000",
+  },
+];
+
 export default function ClientPage() {
   const [messages, setMessages] = useState([]);
   const [chatText, setChatText] = useState("");
-  const [flow, setFlow] = useState(null);
-  const [sending, setSending] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [saving, setSaving] = useState(false);
   const chatBoxRef = useRef(null);
 
   async function getUser() {
@@ -24,20 +75,6 @@ export default function ClientPage() {
       ...prev,
       { id: crypto.randomUUID(), role, message },
     ]);
-  }
-
-  function startFlow(type) {
-    setFlow(type);
-
-    const questions = {
-      income: "What income should we add? Example: Salary 6500",
-      expense: "What expense should we add? Example: Mortgage 2400",
-      asset: "What asset should we add? Example: Savings 15000",
-      debt: "What debt should we add? Example: Chase card 4200",
-      goal: "What goal should we add? Example: Emergency fund 25000",
-    };
-
-    addLocalMessage("assistant", questions[type]);
   }
 
   function parseNameAmount(text) {
@@ -57,33 +94,51 @@ export default function ClientPage() {
     };
   }
 
-  async function saveGuidedAnswer(text) {
-    const user = await getUser();
+  async function saveProfileAnswer(userId, key, value) {
+    const cleanValue = value.trim();
 
-    if (!user) {
-      alert("User not logged in.");
-      return;
+    const payload = {
+      user_id: userId,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (key === "number_of_kids") {
+      payload[key] = Number(cleanValue.replace(/\D/g, "") || 0);
+    } else {
+      payload[key] = cleanValue;
     }
 
-    const parsed = parseNameAmount(text);
+    const { error } = await supabase.from("client_profiles").upsert(payload, {
+      onConflict: "user_id",
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async function saveFinancialAnswer(userId, key, value) {
+    const parsed = parseNameAmount(value);
 
     if (!parsed.amount) {
       addLocalMessage(
         "assistant",
-        "Please include an amount. Example: Mortgage 2400"
+        "Please include an amount. Example: Salary 6500"
       );
-      return;
+      return false;
     }
 
-    if (flow === "income") {
-      await supabase.from("income").insert([
+    if (key === "income") {
+      const { error } = await supabase.from("income").insert([
         {
-          user_id: user.id,
+          user_id: userId,
           source: parsed.name,
           amount: parsed.amount,
           frequency: "Monthly",
         },
       ]);
+
+      if (error) throw new Error(error.message);
 
       addLocalMessage(
         "assistant",
@@ -91,10 +146,10 @@ export default function ClientPage() {
       );
     }
 
-    if (flow === "expense") {
-      await supabase.from("expenses").insert([
+    if (key === "expenses") {
+      const { error } = await supabase.from("expenses").insert([
         {
-          user_id: user.id,
+          user_id: userId,
           name: parsed.name,
           category: "Other",
           amount: parsed.amount,
@@ -102,21 +157,25 @@ export default function ClientPage() {
         },
       ]);
 
+      if (error) throw new Error(error.message);
+
       addLocalMessage(
         "assistant",
         `Added expense: ${parsed.name} - $${parsed.amount.toLocaleString()} monthly.`
       );
     }
 
-    if (flow === "asset") {
-      await supabase.from("assets").insert([
+    if (key === "assets") {
+      const { error } = await supabase.from("assets").insert([
         {
-          user_id: user.id,
+          user_id: userId,
           name: parsed.name,
           category: "Other",
           amount: parsed.amount,
         },
       ]);
+
+      if (error) throw new Error(error.message);
 
       addLocalMessage(
         "assistant",
@@ -124,10 +183,10 @@ export default function ClientPage() {
       );
     }
 
-    if (flow === "debt") {
-      await supabase.from("liabilities").insert([
+    if (key === "liabilities") {
+      const { error } = await supabase.from("liabilities").insert([
         {
-          user_id: user.id,
+          user_id: userId,
           name: parsed.name,
           category: "Other",
           balance: parsed.amount,
@@ -136,16 +195,18 @@ export default function ClientPage() {
         },
       ]);
 
+      if (error) throw new Error(error.message);
+
       addLocalMessage(
         "assistant",
         `Added debt: ${parsed.name} - $${parsed.amount.toLocaleString()}.`
       );
     }
 
-    if (flow === "goal") {
-      await supabase.from("goals").insert([
+    if (key === "goals") {
+      const { error } = await supabase.from("goals").insert([
         {
-          user_id: user.id,
+          user_id: userId,
           title: parsed.name,
           category: "Other",
           target_amount: parsed.amount,
@@ -153,43 +214,80 @@ export default function ClientPage() {
         },
       ]);
 
+      if (error) throw new Error(error.message);
+
       addLocalMessage(
         "assistant",
         `Added goal: ${parsed.name} - target $${parsed.amount.toLocaleString()}.`
       );
     }
 
-    setFlow(null);
-
-    addLocalMessage(
-      "assistant",
-      "What would you like to add next? Choose one of the buttons below."
-    );
+    return true;
   }
 
   async function sendMessage(e) {
     if (e) e.preventDefault();
 
     const cleanMessage = chatText.trim();
-    if (!cleanMessage || sending) return;
 
-    setSending(true);
-    setChatText("");
+    if (!cleanMessage || saving) return;
 
-    addLocalMessage("user", cleanMessage);
+    const user = await getUser();
 
-    if (!flow) {
-      addLocalMessage(
-        "assistant",
-        "Please choose what you want to add first: income, expense, asset, debt, or goal."
-      );
-      setSending(false);
+    if (!user) {
+      alert("User not logged in.");
       return;
     }
 
-    await saveGuidedAnswer(cleanMessage);
+    setSaving(true);
+    setChatText("");
 
-    setSending(false);
+    try {
+      const currentStep = intakeSteps[stepIndex];
+
+      addLocalMessage("user", cleanMessage);
+
+      if (
+        [
+          "full_name",
+          "marital_status",
+          "spouse_name",
+          "number_of_kids",
+          "kids_ages",
+          "main_financial_stress",
+          "main_goal",
+        ].includes(currentStep.key)
+      ) {
+        await saveProfileAnswer(user.id, currentStep.key, cleanMessage);
+      } else {
+        const saved = await saveFinancialAnswer(
+          user.id,
+          currentStep.key,
+          cleanMessage
+        );
+
+        if (!saved) {
+          setSaving(false);
+          return;
+        }
+      }
+
+      const nextIndex = stepIndex + 1;
+
+      if (nextIndex < intakeSteps.length) {
+        setStepIndex(nextIndex);
+        addLocalMessage("assistant", intakeSteps[nextIndex].question);
+      } else {
+        addLocalMessage(
+          "assistant",
+          "Great. Your basic financial intake is saved. You can continue updating income, expenses, assets, debts, and goals from the sidebar anytime."
+        );
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+
+    setSaving(false);
   }
 
   useEffect(() => {
@@ -197,8 +295,7 @@ export default function ClientPage() {
       {
         id: crypto.randomUUID(),
         role: "assistant",
-        message:
-          "Welcome back. What would you like to update today? Choose one below.",
+        message: intakeSteps[0].question,
       },
     ]);
   }, []);
@@ -235,7 +332,7 @@ export default function ClientPage() {
 
               <div className="flex h-[520px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F8F4EF] p-6 shadow-sm">
                 <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                  Financial Intake Guide
+                  Financial Guide
                 </div>
 
                 <div
@@ -263,52 +360,18 @@ export default function ClientPage() {
                         </div>
                       </div>
                     ))}
+
+                    {saving && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] rounded-2xl bg-[#FBF8F3] px-4 py-3 text-sm leading-6 text-[#5F6977]">
+                          Saving...
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => startFlow("income")}
-                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
-                  >
-                    Add Income
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => startFlow("expense")}
-                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
-                  >
-                    Add Expense
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => startFlow("asset")}
-                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
-                  >
-                    Add Asset
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => startFlow("debt")}
-                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
-                  >
-                    Add Debt
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => startFlow("goal")}
-                    className="col-span-2 rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
-                  >
-                    Add Goal
-                  </button>
-                </div>
-
-                <form onSubmit={sendMessage} className="mt-3 shrink-0">
+                <form onSubmit={sendMessage} className="mt-4 shrink-0">
                   <textarea
                     value={chatText}
                     onChange={(e) => setChatText(e.target.value)}
@@ -319,15 +382,15 @@ export default function ClientPage() {
                       }
                     }}
                     placeholder="Type your answer..."
-                    className="h-16 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
+                    className="h-20 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
                   />
 
                   <button
                     type="submit"
-                    disabled={sending}
-                    className="mt-2 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                    disabled={saving}
+                    className="mt-3 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
                   >
-                    {sending ? "Saving..." : "Send"}
+                    {saving ? "Saving..." : "Send"}
                   </button>
                 </form>
               </div>
