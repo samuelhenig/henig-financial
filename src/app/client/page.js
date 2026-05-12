@@ -11,7 +11,7 @@ const intakeSteps = [
   },
   {
     key: "marital_status",
-    question: "Are you married, single, divorced, or widowed?",
+    question: "Are you married or single?",
   },
   {
     key: "spouse_name",
