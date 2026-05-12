@@ -7,7 +7,7 @@ import { supabase } from "../../lib/supabase";
 export default function ClientPage() {
   const [messages, setMessages] = useState([]);
   const [chatText, setChatText] = useState("");
-  const [loadingMessages, setLoadingMessages] = useState(true);
+  const [flow, setFlow] = useState(null);
   const [sending, setSending] = useState(false);
   const chatBoxRef = useRef(null);
 
@@ -19,78 +19,45 @@ export default function ClientPage() {
     return user;
   }
 
-  async function loadMessages() {
-    setLoadingMessages(true);
-
-    const user = await getUser();
-
-    if (!user) {
-      setLoadingMessages(false);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("ai_messages")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      alert(error.message);
-      setLoadingMessages(false);
-      return;
-    }
-
-    setMessages(data || []);
-    setLoadingMessages(false);
-
-    setTimeout(() => {
-      if (chatBoxRef.current) {
-        chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-      }
-    }, 50);
+  function addLocalMessage(role, message) {
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role, message },
+    ]);
   }
 
-  async function loadFinancialContext(userId) {
-    const [incomeRes, expensesRes, assetsRes, liabilitiesRes, goalsRes] =
-      await Promise.all([
-        supabase.from("income").select("*").eq("user_id", userId),
-        supabase.from("expenses").select("*").eq("user_id", userId),
-        supabase.from("assets").select("*").eq("user_id", userId),
-        supabase.from("liabilities").select("*").eq("user_id", userId),
-        supabase.from("goals").select("*").eq("user_id", userId),
-      ]);
+  function startFlow(type) {
+    setFlow(type);
+
+    const questions = {
+      income: "What income should we add? Example: Salary 6500",
+      expense: "What expense should we add? Example: Mortgage 2400",
+      asset: "What asset should we add? Example: Savings 15000",
+      debt: "What debt should we add? Example: Chase card 4200",
+      goal: "What goal should we add? Example: Emergency fund 25000",
+    };
+
+    addLocalMessage("assistant", questions[type]);
+  }
+
+  function parseNameAmount(text) {
+    const amountMatch = text.match(/[\d,]+(\.\d{1,2})?/);
+    const amount = amountMatch
+      ? Number(amountMatch[0].replace(/,/g, ""))
+      : 0;
+
+    const name = text
+      .replace(amountMatch?.[0] || "", "")
+      .replace(/\$/g, "")
+      .trim();
 
     return {
-      income: incomeRes.data || [],
-      expenses: expensesRes.data || [],
-      assets: assetsRes.data || [],
-      liabilities: liabilitiesRes.data || [],
-      goals: goalsRes.data || [],
+      name: name || "Untitled",
+      amount,
     };
   }
 
-  async function saveMessage(userId, role, message) {
-    const { error } = await supabase.from("ai_messages").insert([
-      {
-        user_id: userId,
-        role,
-        message,
-      },
-    ]);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  async function sendMessage(e) {
-    if (e) e.preventDefault();
-
-    const cleanMessage = chatText.trim();
-
-    if (!cleanMessage || sending) return;
-
+  async function saveGuidedAnswer(text) {
     const user = await getUser();
 
     if (!user) {
@@ -98,46 +65,142 @@ export default function ClientPage() {
       return;
     }
 
+    const parsed = parseNameAmount(text);
+
+    if (!parsed.amount) {
+      addLocalMessage(
+        "assistant",
+        "Please include an amount. Example: Mortgage 2400"
+      );
+      return;
+    }
+
+    if (flow === "income") {
+      await supabase.from("income").insert([
+        {
+          user_id: user.id,
+          source: parsed.name,
+          amount: parsed.amount,
+          frequency: "Monthly",
+        },
+      ]);
+
+      addLocalMessage(
+        "assistant",
+        `Added income: ${parsed.name} - $${parsed.amount.toLocaleString()} monthly.`
+      );
+    }
+
+    if (flow === "expense") {
+      await supabase.from("expenses").insert([
+        {
+          user_id: user.id,
+          name: parsed.name,
+          category: "Other",
+          amount: parsed.amount,
+          frequency: "Monthly",
+        },
+      ]);
+
+      addLocalMessage(
+        "assistant",
+        `Added expense: ${parsed.name} - $${parsed.amount.toLocaleString()} monthly.`
+      );
+    }
+
+    if (flow === "asset") {
+      await supabase.from("assets").insert([
+        {
+          user_id: user.id,
+          name: parsed.name,
+          category: "Other",
+          amount: parsed.amount,
+        },
+      ]);
+
+      addLocalMessage(
+        "assistant",
+        `Added asset: ${parsed.name} - $${parsed.amount.toLocaleString()}.`
+      );
+    }
+
+    if (flow === "debt") {
+      await supabase.from("liabilities").insert([
+        {
+          user_id: user.id,
+          name: parsed.name,
+          category: "Other",
+          balance: parsed.amount,
+          monthly_payment: 0,
+          interest_rate: 0,
+        },
+      ]);
+
+      addLocalMessage(
+        "assistant",
+        `Added debt: ${parsed.name} - $${parsed.amount.toLocaleString()}.`
+      );
+    }
+
+    if (flow === "goal") {
+      await supabase.from("goals").insert([
+        {
+          user_id: user.id,
+          title: parsed.name,
+          category: "Other",
+          target_amount: parsed.amount,
+          current_amount: 0,
+        },
+      ]);
+
+      addLocalMessage(
+        "assistant",
+        `Added goal: ${parsed.name} - target $${parsed.amount.toLocaleString()}.`
+      );
+    }
+
+    setFlow(null);
+
+    addLocalMessage(
+      "assistant",
+      "What would you like to add next? Choose one of the buttons below."
+    );
+  }
+
+  async function sendMessage(e) {
+    if (e) e.preventDefault();
+
+    const cleanMessage = chatText.trim();
+    if (!cleanMessage || sending) return;
+
     setSending(true);
     setChatText("");
 
-    try {
-      await saveMessage(user.id, "user", cleanMessage);
-      await loadMessages();
+    addLocalMessage("user", cleanMessage);
 
-      const context = await loadFinancialContext(user.id);
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: cleanMessage,
-          context,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || "AI response failed.");
-      }
-
-      const aiReply =
-        data?.reply || "I’m sorry, I wasn’t able to respond right now.";
-
-      await saveMessage(user.id, "assistant", aiReply);
-      await loadMessages();
-    } catch (error) {
-      alert(error.message);
+    if (!flow) {
+      addLocalMessage(
+        "assistant",
+        "Please choose what you want to add first: income, expense, asset, debt, or goal."
+      );
+      setSending(false);
+      return;
     }
+
+    await saveGuidedAnswer(cleanMessage);
 
     setSending(false);
   }
 
   useEffect(() => {
-    loadMessages();
+    setMessages([
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        message:
+          "Welcome back. What would you like to update today? Choose one below.",
+      },
+    ]);
   }, []);
 
   useEffect(() => {
@@ -170,28 +233,15 @@ export default function ClientPage() {
                 </p>
               </div>
 
-              <div className="flex h-[500px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F8F4EF] p-6 shadow-sm">
+              <div className="flex h-[520px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F8F4EF] p-6 shadow-sm">
                 <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                  AI Financial Guide
+                  Financial Intake Guide
                 </div>
 
                 <div
                   ref={chatBoxRef}
                   className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-white p-4"
                 >
-                  {loadingMessages && (
-                    <div className="text-sm text-[#5F6977]">
-                      Loading chat...
-                    </div>
-                  )}
-
-                  {!loadingMessages && messages.length === 0 && (
-                    <div className="rounded-2xl bg-[#FBF8F3] p-4 text-sm leading-7 text-[#5F6977]">
-                      Welcome back. Ask me what to work on next, or tell me what
-                      changed in your money this month.
-                    </div>
-                  )}
-
                   <div className="space-y-3">
                     {messages.map((item) => (
                       <div
@@ -213,18 +263,52 @@ export default function ClientPage() {
                         </div>
                       </div>
                     ))}
-
-                    {sending && (
-                      <div className="flex justify-start">
-                        <div className="max-w-[85%] rounded-2xl bg-[#FBF8F3] px-4 py-3 text-sm leading-6 text-[#5F6977]">
-                          Thinking...
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                <form onSubmit={sendMessage} className="mt-4 shrink-0">
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startFlow("income")}
+                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
+                  >
+                    Add Income
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => startFlow("expense")}
+                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
+                  >
+                    Add Expense
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => startFlow("asset")}
+                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
+                  >
+                    Add Asset
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => startFlow("debt")}
+                    className="rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
+                  >
+                    Add Debt
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => startFlow("goal")}
+                    className="col-span-2 rounded-2xl border border-[#E6D8C8] bg-white px-3 py-2 text-sm font-medium hover:bg-[#F4EFE8]"
+                  >
+                    Add Goal
+                  </button>
+                </div>
+
+                <form onSubmit={sendMessage} className="mt-3 shrink-0">
                   <textarea
                     value={chatText}
                     onChange={(e) => setChatText(e.target.value)}
@@ -234,16 +318,16 @@ export default function ClientPage() {
                         sendMessage(e);
                       }
                     }}
-                    placeholder="Ask your financial guide..."
-                    className="h-20 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
+                    placeholder="Type your answer..."
+                    className="h-16 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
                   />
 
                   <button
                     type="submit"
                     disabled={sending}
-                    className="mt-3 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                    className="mt-2 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
                   >
-                    {sending ? "Sending..." : "Send Message"}
+                    {sending ? "Saving..." : "Send"}
                   </button>
                 </form>
               </div>
