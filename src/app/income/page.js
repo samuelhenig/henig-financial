@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import PortalSidebar from "../components/PortalSidebar";
 
 export default function IncomePage() {
   const [sources, setSources] = useState([]);
@@ -113,51 +113,10 @@ export default function IncomePage() {
     });
   }
 
-  const navItems = [
-    ["Dashboard", "/client"],
-    ["Income", "/income"],
-    ["Charity", "/charity"],
-    ["Savings", "/savings"],
-    ["Investments", "/investments"],
-    ["Bills", "/bills"],
-    ["Spending", "/spending"],
-    ["Assets", "/assets"],
-    ["Liabilities", "/liabilities"],
-    ["Goals", "/goals"],
-  ];
-
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <div className="flex min-h-screen">
-        <aside className="w-[320px] border-r border-[#E6D8C8] bg-white">
-          <div className="border-b border-[#E6D8C8] px-8 py-10">
-            <div className="text-2xl font-semibold tracking-tight">
-              Henig Financial
-            </div>
-
-            <div className="mt-2 text-xs font-semibold uppercase tracking-[0.32em] text-[#A86846]">
-              Financial Clarity System
-            </div>
-          </div>
-
-          <nav className="px-6 py-8">
-            <div className="space-y-3">
-              {navItems.map(([label, href]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={
-                    href === "/income"
-                      ? "block rounded-2xl bg-[#20344C] px-4 py-3 text-sm font-medium text-white"
-                      : "block rounded-2xl px-4 py-3 text-sm font-medium text-[#5F6977] transition hover:bg-[#F4EFE8]"
-                  }
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        </aside>
+        <PortalSidebar />
 
         <section className="flex-1 px-10 py-8">
           <div className="mx-auto max-w-7xl">
