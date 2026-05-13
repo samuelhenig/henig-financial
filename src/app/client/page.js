@@ -121,25 +121,25 @@ export default function ClientPage() {
         <section className="flex-1 px-6 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-7xl">
 
-            {/* TOP GRID */}
             <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
 
-              {/* LEFT */}
+              {/* LEFT SIDE */}
               <div className="space-y-6">
 
                 {/* HERO */}
                 <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm md:p-10">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                    Financial Dashboard
+                    Welcome Henig Family
                   </div>
 
                   <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">
-                    Your Financial Clarity Center
+                    Your Financial Clarity Dashboard
                   </h1>
 
                   <p className="mt-5 max-w-3xl text-base leading-7 text-[#5F6977] md:text-lg">
-                    A calm place to organize your money, priorities, savings,
-                    goals, and long-term direction.
+                    Simplicity brings clarity. This is your private financial
+                    command center where we organize your money, priorities,
+                    goals, and long-term direction together.
                   </p>
                 </div>
 
@@ -205,7 +205,7 @@ export default function ClientPage() {
                   </div>
                 </div>
 
-                {/* SAVINGS SECTION */}
+                {/* SAVINGS + INVESTMENTS */}
                 <div className="grid gap-5 md:grid-cols-2">
 
                   <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
@@ -272,7 +272,7 @@ export default function ClientPage() {
 
               </div>
 
-              {/* RIGHT CHAT */}
+              {/* RIGHT SIDE AI */}
               <div className="flex h-[760px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F7F3EE] p-5 shadow-sm">
 
                 <div>
