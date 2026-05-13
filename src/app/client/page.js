@@ -6,11 +6,13 @@ import { supabase } from "../../lib/supabase";
 
 export default function ClientPage() {
   const [chatText, setChatText] = useState("");
+
   const [messages, setMessages] = useState([
     {
       id: "welcome",
       role: "assistant",
-      message: "Welcome back. What would you like to update today?",
+      message:
+        "Welcome back. What would you like to update or work on today?",
     },
   ]);
 
@@ -62,37 +64,18 @@ export default function ClientPage() {
     setTotalDebt(debtTotal);
   }
 
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  useEffect(() => {
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   function formatMoney(value) {
     return `$${Number(value || 0).toLocaleString()}`;
-  }
-
-  function getPercent(amount) {
-    if (!monthlyIncome) return 0;
-    return Math.round((amount / monthlyIncome) * 100);
-  }
-
-  function getBarStatus(percent, min, max) {
-    if (percent >= min && percent <= max) {
-      return {
-        color: "bg-[#7CA982]",
-        label: "On Track",
-      };
-    }
-
-    if (
-      (percent >= min - 5 && percent < min) ||
-      (percent > max && percent <= max + 10)
-    ) {
-      return {
-        color: "bg-[#D6B85A]",
-        label: "Close",
-      };
-    }
-
-    return {
-      color: "bg-[#C96B5C]",
-      label: "Needs Attention",
-    };
   }
 
   function addMessage(role, message) {
@@ -107,105 +90,207 @@ export default function ClientPage() {
   }
 
   async function sendMessage(e) {
-    if (e) e.preventDefault();
+    e.preventDefault();
 
     const cleanMessage = chatText.trim();
+
     if (!cleanMessage) return;
 
     setChatText("");
+
     addMessage("user", cleanMessage);
 
     addMessage(
       "assistant",
-      "Saved for now. Soon this guide will update your income, expenses, assets, debts, and goals directly from this chat."
+      "Saved for now. Soon this assistant will update your finances directly from chat."
     );
   }
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  useEffect(() => {
-    if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-    }
-  }, [messages]);
 
   const cashFlow = monthlyIncome - monthlyExpenses;
   const netWorth = totalAssets - totalDebt;
 
-  const csibs = [
-    {
-      name: "Charity",
-      target: "10–20%",
-      percent: getPercent(0),
-      min: 10,
-      max: 20,
-    },
-    {
-      name: "Savings",
-      target: "5–10%",
-      percent: getPercent(0),
-      min: 5,
-      max: 10,
-    },
-    {
-      name: "Investments",
-      target: "5–10%",
-      percent: getPercent(0),
-      min: 5,
-      max: 10,
-    },
-    {
-      name: "Bills",
-      target: "50–60%",
-      percent: getPercent(monthlyExpenses),
-      min: 50,
-      max: 60,
-    },
-    {
-      name: "Spending",
-      target: "20–30%",
-      percent: getPercent(0),
-      min: 20,
-      max: 30,
-    },
-  ];
+  const savingsPercent = monthlyIncome
+    ? Math.round((cashFlow / monthlyIncome) * 100)
+    : 0;
 
   return (
     <main className="min-h-screen bg-[#FBF8F3] text-[#1D2834]">
       <div className="flex min-h-screen">
         <PortalSidebar />
 
-        <section className="flex-1 px-10 py-8">
+        <section className="flex-1 px-6 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-7xl">
-            <div className="grid gap-8 lg:grid-cols-[1fr_390px]">
-              <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-10 shadow-sm">
-                <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                  Welcome Henig Family
+
+            {/* TOP GRID */}
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+
+              {/* LEFT */}
+              <div className="space-y-6">
+
+                {/* HERO */}
+                <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm md:p-10">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                    Financial Dashboard
+                  </div>
+
+                  <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">
+                    Your Financial Clarity Center
+                  </h1>
+
+                  <p className="mt-5 max-w-3xl text-base leading-7 text-[#5F6977] md:text-lg">
+                    A calm place to organize your money, priorities, savings,
+                    goals, and long-term direction.
+                  </p>
                 </div>
 
-                <h1 className="max-w-4xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-                  Your Financial Clarity Dashboard
-                </h1>
+                {/* SUMMARY CARDS */}
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-                <p className="mt-6 max-w-3xl text-lg leading-8 text-[#5F6977]">
-                  Simplicity brings clarity. This is your private financial
-                  command center where we organize your money, priorities,
-                  goals, and long-term direction together.
-                </p>
+                  <DashboardCard
+                    title="Monthly Income"
+                    value={formatMoney(monthlyIncome)}
+                    subtitle="Combined monthly income"
+                  />
+
+                  <DashboardCard
+                    title="Monthly Expenses"
+                    value={formatMoney(monthlyExpenses)}
+                    subtitle="Current monthly spending"
+                  />
+
+                  <DashboardCard
+                    title="Cash Flow"
+                    value={formatMoney(cashFlow)}
+                    subtitle="Income minus expenses"
+                  />
+
+                  <DashboardCard
+                    title="Net Worth"
+                    value={formatMoney(netWorth)}
+                    subtitle="Assets minus liabilities"
+                  />
+
+                </div>
+
+                {/* GOALS */}
+                <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                    Goals
+                  </div>
+
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+                    Financial Targets
+                  </h2>
+
+                  <div className="mt-7 grid gap-5 md:grid-cols-3">
+
+                    <GoalCard
+                      title="Emergency Fund"
+                      amount="$15,000 Goal"
+                      progress="42%"
+                    />
+
+                    <GoalCard
+                      title="Debt Reduction"
+                      amount="$8,000 Remaining"
+                      progress="63%"
+                    />
+
+                    <GoalCard
+                      title="Investments"
+                      amount="Long-Term Growth"
+                      progress="27%"
+                    />
+
+                  </div>
+                </div>
+
+                {/* SAVINGS SECTION */}
+                <div className="grid gap-5 md:grid-cols-2">
+
+                  <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                      Savings
+                    </div>
+
+                    <div className="mt-3 text-2xl font-semibold">
+                      {savingsPercent}%
+                    </div>
+
+                    <p className="mt-3 text-sm leading-6 text-[#5F6977]">
+                      Current leftover cash flow available for savings,
+                      investing, or debt reduction.
+                    </p>
+                  </div>
+
+                  <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                      Investments
+                    </div>
+
+                    <div className="mt-3 text-2xl font-semibold">
+                      Long-Term Planning
+                    </div>
+
+                    <p className="mt-3 text-sm leading-6 text-[#5F6977]">
+                      Retirement, brokerage, and future wealth planning will
+                      appear here.
+                    </p>
+                  </div>
+
+                </div>
+
+                {/* RECENT ACTIVITY */}
+                <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-8 shadow-sm">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                    Activity
+                  </div>
+
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+                    Recent Financial Activity
+                  </h2>
+
+                  <div className="mt-6 space-y-4">
+
+                    <ActivityItem
+                      title="Monthly income updated"
+                      time="Today"
+                    />
+
+                    <ActivityItem
+                      title="Expense categories reviewed"
+                      time="Yesterday"
+                    />
+
+                    <ActivityItem
+                      title="Savings plan created"
+                      time="Last week"
+                    />
+
+                  </div>
+                </div>
+
               </div>
 
-              <div className="flex h-[520px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F8F4EF] p-6 shadow-sm">
-                <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                  Financial Guide
+              {/* RIGHT CHAT */}
+              <div className="flex h-[760px] flex-col rounded-[2rem] border border-[#E6D8C8] bg-[#F7F3EE] p-5 shadow-sm">
+
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+                    AI Financial Coach
+                  </div>
+
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+                    Financial Guide
+                  </h2>
                 </div>
 
                 <div
                   ref={chatBoxRef}
-                  className="min-h-0 flex-1 overflow-y-auto rounded-2xl bg-white p-4"
+                  className="mt-5 min-h-0 flex-1 overflow-y-auto rounded-2xl bg-white p-4"
                 >
                   <div className="space-y-3">
+
                     {messages.map((item) => (
                       <div
                         key={item.id}
@@ -226,119 +311,92 @@ export default function ClientPage() {
                         </div>
                       </div>
                     ))}
+
                   </div>
                 </div>
 
-                <form onSubmit={sendMessage} className="mt-4 shrink-0">
+                <form onSubmit={sendMessage} className="mt-4">
+
                   <textarea
                     value={chatText}
                     onChange={(e) => setChatText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage(e);
-                      }
-                    }}
-                    placeholder="Type your answer..."
-                    className="h-20 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
+                    placeholder="Ask a question or update something..."
+                    className="h-24 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none focus:border-[#A86846]"
                   />
 
                   <button
                     type="submit"
                     className="mt-3 w-full rounded-2xl bg-[#20344C] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
                   >
-                    Send
+                    Send Message
                   </button>
+
                 </form>
-              </div>
-            </div>
 
-            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {[
-                ["Your Number", formatMoney(cashFlow), "Income minus expenses"],
-                [
-                  "Monthly Income",
-                  formatMoney(monthlyIncome),
-                  "All income sources combined",
-                ],
-                [
-                  "Monthly Expenses",
-                  formatMoney(monthlyExpenses),
-                  "Total monthly outflow",
-                ],
-                ["Net Worth", formatMoney(netWorth), "Assets minus liabilities"],
-              ].map(([title, value, subtitle]) => (
-                <div
-                  key={title}
-                  className="rounded-[2rem] border border-[#E6D8C8] bg-white p-7 shadow-sm"
-                >
-                  <div className="text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                    {title}
-                  </div>
-
-                  <div className="mt-7 text-4xl font-semibold tracking-tight">
-                    {value}
-                  </div>
-
-                  <div className="mt-4 text-base text-[#5F6977]">
-                    {subtitle}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 rounded-[2rem] border border-[#E6D8C8] bg-white p-10 shadow-sm">
-              <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#A86846]">
-                CSIBS Method
               </div>
 
-              <h2 className="text-3xl font-semibold tracking-tight">
-                Your Priority Allocation System
-              </h2>
-
-              <div className="mt-8 space-y-7">
-                {csibs.map((item) => {
-                  const status = getBarStatus(
-                    item.percent,
-                    item.min,
-                    item.max
-                  );
-
-                  return (
-                    <div key={item.name}>
-                      <div className="mb-2 flex items-center justify-between text-sm">
-                        <div>
-                          <span className="font-medium">{item.name}</span>{" "}
-                          <span className="text-[#5F6977]">
-                            Target: {item.target}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-[#5F6977]">
-                            {status.label}
-                          </span>
-
-                          <span>{item.percent}%</span>
-                        </div>
-                      </div>
-
-                      <div className="h-3 rounded-full bg-[#EDE5DB]">
-                        <div
-                          className={`h-3 rounded-full ${status.color}`}
-                          style={{
-                            width: `${Math.min(item.percent, 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
+
           </div>
         </section>
       </div>
     </main>
+  );
+}
+
+function DashboardCard({ title, value, subtitle }) {
+  return (
+    <div className="rounded-[2rem] border border-[#E6D8C8] bg-white p-7 shadow-sm">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#A86846]">
+        {title}
+      </div>
+
+      <div className="mt-5 text-3xl font-semibold tracking-tight">
+        {value}
+      </div>
+
+      <div className="mt-3 text-sm leading-6 text-[#5F6977]">
+        {subtitle}
+      </div>
+    </div>
+  );
+}
+
+function GoalCard({ title, amount, progress }) {
+  return (
+    <div className="rounded-[1.7rem] border border-[#EEE3D6] bg-[#FBF8F3] p-6">
+      <div className="text-lg font-semibold">
+        {title}
+      </div>
+
+      <div className="mt-2 text-sm text-[#5F6977]">
+        {amount}
+      </div>
+
+      <div className="mt-5 h-3 rounded-full bg-[#E6D8C8]">
+        <div
+          className="h-3 rounded-full bg-[#7CA982]"
+          style={{ width: progress }}
+        />
+      </div>
+
+      <div className="mt-2 text-sm text-[#5F6977]">
+        {progress} complete
+      </div>
+    </div>
+  );
+}
+
+function ActivityItem({ title, time }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-[#EEE3D6] bg-[#FBF8F3] px-5 py-4">
+      <div className="text-sm font-medium">
+        {title}
+      </div>
+
+      <div className="text-xs text-[#5F6977]">
+        {time}
+      </div>
+    </div>
   );
 }
