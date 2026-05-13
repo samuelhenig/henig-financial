@@ -189,10 +189,11 @@ export default function ClientPage() {
       return;
     }
 
-    const { error } = await supabase.from("income").insert([
+    const { error } = await supabase.from("income_sources").insert([
       {
         user_id: user.id,
-        source: incomeData.source,
+        name: incomeData.source,
+        category: incomeData.source,
         amount: incomeData.amount,
         frequency: incomeData.frequency,
         notes: incomeData.notes,
