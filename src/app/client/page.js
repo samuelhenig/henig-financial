@@ -10,7 +10,8 @@ export default function ClientPage() {
     {
       id: "welcome",
       role: "assistant",
-      message: "Welcome back. What would you like to update today?",
+      message:
+        "Welcome back. To add income, type something like: salary 7500",
     },
   ]);
 
@@ -106,6 +107,60 @@ export default function ClientPage() {
     ]);
   }
 
+  function parseIncomeMessage(message) {
+    const lower = message.toLowerCase();
+
+    const amountMatch = lower.match(/\$?\s*([0-9,]+)(\.\d{1,2})?/);
+    if (!amountMatch) return null;
+
+    const amount = Number(amountMatch[0].replace(/[$,\s]/g, ""));
+    if (!amount || amount <= 0) return null;
+
+    const incomeWords = [
+      "income",
+      "salary",
+      "paycheck",
+      "job",
+      "wages",
+      "commission",
+      "bonus",
+      "business",
+      "side",
+      "rental",
+    ];
+
+    const hasIncomeWord = incomeWords.some((word) => lower.includes(word));
+
+    if (!hasIncomeWord) return null;
+
+    let source = "Income";
+
+    if (lower.includes("salary")) source = "Salary";
+    else if (lower.includes("paycheck")) source = "Paycheck";
+    else if (lower.includes("job")) source = "Job";
+    else if (lower.includes("commission")) source = "Commission";
+    else if (lower.includes("bonus")) source = "Bonus";
+    else if (lower.includes("business")) source = "Business Income";
+    else if (lower.includes("rental")) source = "Rental Income";
+
+    let frequency = "monthly";
+
+    if (lower.includes("weekly")) frequency = "weekly";
+    if (lower.includes("biweekly") || lower.includes("every 2 weeks")) {
+      frequency = "biweekly";
+    }
+    if (lower.includes("yearly") || lower.includes("annual")) {
+      frequency = "yearly";
+    }
+
+    return {
+      source,
+      amount,
+      frequency,
+      notes: message,
+    };
+  }
+
   async function sendMessage(e) {
     if (e) e.preventDefault();
 
@@ -115,9 +170,45 @@ export default function ClientPage() {
     setChatText("");
     addMessage("user", cleanMessage);
 
+    const incomeData = parseIncomeMessage(cleanMessage);
+
+    if (!incomeData) {
+      addMessage(
+        "assistant",
+        "I did not catch an income entry. Try typing: salary 7500 or income job 6500 monthly."
+      );
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      addMessage("assistant", "You need to be logged in before saving income.");
+      return;
+    }
+
+    const { error } = await supabase.from("income").insert([
+      {
+        user_id: user.id,
+        source: incomeData.source,
+        amount: incomeData.amount,
+        frequency: incomeData.frequency,
+        notes: incomeData.notes,
+      },
+    ]);
+
+    if (error) {
+      addMessage("assistant", "Something went wrong saving this income.");
+      return;
+    }
+
+    await loadDashboardData();
+
     addMessage(
       "assistant",
-      "Saved for now. Soon this guide will update your income, expenses, assets, debts, and goals directly from this chat."
+      `Saved ${formatMoney(incomeData.amount)} as ${incomeData.source}.`
     );
   }
 
@@ -239,7 +330,7 @@ export default function ClientPage() {
                         sendMessage(e);
                       }
                     }}
-                    placeholder="Type your answer..."
+                    placeholder="Example: salary 7500"
                     className="h-20 w-full resize-none rounded-2xl border border-[#E6D8C8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#A86846]"
                   />
 
