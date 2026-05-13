@@ -11,7 +11,7 @@ export default function ClientPage() {
       id: "welcome",
       role: "assistant",
       message:
-        "Welcome back. To add income, type something like: salary 7500",
+        "Welcome back. Let’s start simple. Tell me one income source, like: salary 7500",
     },
   ]);
 
@@ -31,16 +31,15 @@ export default function ClientPage() {
 
     const [incomeRes, expensesRes, assetsRes, liabilitiesRes] =
       await Promise.all([
-        supabase.from("income").select("*").eq("user_id", user.id),
+        supabase.from("income_sources").select("*"),
         supabase.from("expenses").select("*").eq("user_id", user.id),
         supabase.from("assets").select("*").eq("user_id", user.id),
         supabase.from("liabilities").select("*").eq("user_id", user.id),
       ]);
 
-    const incomeTotal = (incomeRes.data || []).reduce(
-      (sum, item) => sum + Number(item.amount || 0),
-      0
-    );
+    const incomeTotal = (incomeRes.data || []).reduce((sum, item) => {
+      return sum + monthlyAmount(item.amount, item.frequency);
+    }, 0);
 
     const expenseTotal = (expensesRes.data || []).reduce(
       (sum, item) => sum + Number(item.amount || 0),
@@ -63,8 +62,21 @@ export default function ClientPage() {
     setTotalDebt(debtTotal);
   }
 
+  function monthlyAmount(amount, frequency) {
+    const number = Number(amount || 0);
+    const cleanFrequency = String(frequency || "Monthly").toLowerCase();
+
+    if (cleanFrequency === "weekly") return number * 4.33;
+    if (cleanFrequency === "biweekly") return number * 2.165;
+    if (cleanFrequency === "yearly") return number / 12;
+
+    return number;
+  }
+
   function formatMoney(value) {
-    return `$${Number(value || 0).toLocaleString()}`;
+    return `$${Number(value || 0).toLocaleString(undefined, {
+      maximumFractionDigits: 0,
+    })}`;
   }
 
   function getPercent(amount) {
@@ -130,31 +142,50 @@ export default function ClientPage() {
     ];
 
     const hasIncomeWord = incomeWords.some((word) => lower.includes(word));
-
     if (!hasIncomeWord) return null;
 
-    let source = "Income";
+    let name = "Income";
+    let category = "Other";
 
-    if (lower.includes("salary")) source = "Salary";
-    else if (lower.includes("paycheck")) source = "Paycheck";
-    else if (lower.includes("job")) source = "Job";
-    else if (lower.includes("commission")) source = "Commission";
-    else if (lower.includes("bonus")) source = "Bonus";
-    else if (lower.includes("business")) source = "Business Income";
-    else if (lower.includes("rental")) source = "Rental Income";
+    if (lower.includes("salary")) {
+      name = "Salary";
+      category = "Salary";
+    } else if (lower.includes("paycheck")) {
+      name = "Paycheck";
+      category = "Salary";
+    } else if (lower.includes("job")) {
+      name = "Job";
+      category = "Salary";
+    } else if (lower.includes("commission")) {
+      name = "Commission";
+      category = "Salary";
+    } else if (lower.includes("bonus")) {
+      name = "Bonus";
+      category = "Salary";
+    } else if (lower.includes("business")) {
+      name = "Business Income";
+      category = "Business";
+    } else if (lower.includes("side")) {
+      name = "Side Hustle";
+      category = "Side Hustle";
+    } else if (lower.includes("rental")) {
+      name = "Rental Income";
+      category = "Rental";
+    }
 
-    let frequency = "monthly";
+    let frequency = "Monthly";
 
-    if (lower.includes("weekly")) frequency = "weekly";
+    if (lower.includes("weekly")) frequency = "Weekly";
     if (lower.includes("biweekly") || lower.includes("every 2 weeks")) {
-      frequency = "biweekly";
+      frequency = "Biweekly";
     }
     if (lower.includes("yearly") || lower.includes("annual")) {
-      frequency = "yearly";
+      frequency = "Yearly";
     }
 
     return {
-      source,
+      name,
+      category,
       amount,
       frequency,
       notes: message,
@@ -175,24 +206,15 @@ export default function ClientPage() {
     if (!incomeData) {
       addMessage(
         "assistant",
-        "I did not catch an income entry. Try typing: salary 7500 or income job 6500 monthly."
+        "I want to make sure I save this correctly. For now, try it like this: salary 7500, business 3000, or rental 1200."
       );
-      return;
-    }
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      addMessage("assistant", "You need to be logged in before saving income.");
       return;
     }
 
     const { error } = await supabase.from("income_sources").insert([
       {
-        name: incomeData.source,
-        category: incomeData.source,
+        name: incomeData.name,
+        category: incomeData.category,
         amount: incomeData.amount,
         frequency: incomeData.frequency,
         notes: incomeData.notes,
@@ -200,6 +222,7 @@ export default function ClientPage() {
     ]);
 
     if (error) {
+      console.error(error);
       addMessage("assistant", "Something went wrong saving this income.");
       return;
     }
@@ -208,7 +231,7 @@ export default function ClientPage() {
 
     addMessage(
       "assistant",
-      `Saved ${formatMoney(incomeData.amount)} as ${incomeData.source}.`
+      `Great. I saved ${formatMoney(incomeData.amount)} as ${incomeData.name}.`
     );
   }
 
